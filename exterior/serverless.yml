@@ -1,0 +1,17 @@
+service: opendatadr-exterior
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": OpenDataGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": OpenDataGW-rootResourceId
+functions:
+  get-exterior:
+    handler: handler.getExterior
+    events:
+      - http:
+          path: /exterior
+          method: get
