@@ -1,4 +1,6 @@
-service: opendatadr-partidos
+org: enzovezzaro
+app: opendatadr
+service: opendatadr-api-v1-partidos
 provider:
   name: aws
   runtime: nodejs12.x

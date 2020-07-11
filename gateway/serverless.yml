@@ -1,3 +1,5 @@
+org: enzovezzaro
+app: opendatadr
 service: opendatadr-gateway
 provider:
   name: aws

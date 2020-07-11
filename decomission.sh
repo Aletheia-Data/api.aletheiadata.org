@@ -22,6 +22,16 @@ serverless remove
 sleep 5s
 
 cd ..
+cd estado
+serverless remove
+sleep 5s
+
+cd ..
+cd elecciones
+serverless remove
+sleep 5s
+
+cd ..
 cd gateway
 serverless remove
 

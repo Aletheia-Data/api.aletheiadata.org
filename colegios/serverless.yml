@@ -1,4 +1,6 @@
-service: opendatadr-colegios
+org: enzovezzaro
+app: opendatadr
+service: opendatadr-api-v1-colegios
 provider:
   name: aws
   runtime: nodejs12.x

@@ -1,6 +1,6 @@
 org: enzovezzaro
 app: opendatadr
-service: opendatadr-api-v1-exterior
+service: opendatadr-api-v1-estado
 provider:
   name: aws
   runtime: nodejs12.x
@@ -11,9 +11,15 @@ provider:
     restApiRootResourceId:
       "Fn::ImportValue": OpenDataGW-rootResourceId
 functions:
-  get-exterior:
-    handler: handler.getExterior
+  get-estado:
+    handler: handler.getEstado
     events:
       - http:
-          path: /exterior
+          path: /estado
+          method: get
+  get-municipio:
+    handler: handler.getMunicipio
+    events:
+      - http:
+          path: /estado/{year}/municipio
           method: get

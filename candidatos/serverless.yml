@@ -1,4 +1,6 @@
-service: opendatadr-candidatos
+org: enzovezzaro
+app: opendatadr
+service: opendatadr-api-v1-candidatos
 provider:
   name: aws
   runtime: nodejs12.x
