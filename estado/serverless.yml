@@ -11,15 +11,79 @@ provider:
     restApiRootResourceId:
       "Fn::ImportValue": OpenDataGW-rootResourceId
 functions:
-  get-estado:
-    handler: handler.getEstado
-    events:
-      - http:
-          path: /estado
-          method: get
   get-municipio:
     handler: handler.getMunicipio
     events:
       - http:
           path: /estado/{year}/municipio
           method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-distrito:
+    handler: handler.getDistrito
+    events:
+      - http:
+          path: /estado/{year}/distrito-municipal
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-cargo:
+    handler: handler.getCargo
+    events:
+      - http:
+          path: /estado/{year}/cargo
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-provincia:
+    handler: handler.getProvincia
+    events:
+      - http:
+          path: /estado/{year}/provincia
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}

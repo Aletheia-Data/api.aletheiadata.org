@@ -1,0 +1,7 @@
+{ 
+    "queryStringParameters": {
+        "query":"municipio",
+        "value":"ALTAMIRA",
+        "start": 0
+    }
+}
