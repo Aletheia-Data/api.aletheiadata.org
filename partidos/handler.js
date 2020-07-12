@@ -19,11 +19,13 @@ global.exit = (code, body) =>{
       statusMessage: 'internal-error'
     }];
   } if (code == 400) {
+    code = 400,
     body = [{
       statusMessage: 'bad-request'
     }];
   } else {
     if (body.length === 0) {
+      code = 400,
       body = [{
         statusMessage: 'not-found'
       }];
