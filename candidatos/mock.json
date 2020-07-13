@@ -1,0 +1,8 @@
+{ 
+    "pathParameters": {
+        "year": 2020
+    },
+    "queryStringParameters": {
+        "start": 15
+    }
+}

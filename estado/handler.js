@@ -60,31 +60,48 @@ module.exports.getMunicipio = async event => {
   `;
 
   // Get Path Params
-  let pathParameters = event['queryStringParameters'];
-  // Log query
+  let pathParameters = event['pathParameters'];
+  // Log Params
   console.log('Path Params: ', pathParameters);
   if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Get Path Params
+  let queryStringParameters = event['queryStringParameters'];
+  // Log query
+  console.log('Query Params: ', queryStringParameters);
+  if (queryStringParameters){
 
     // If there's query available, filter by query value
-    if (pathParameters.query){
+    if (queryStringParameters.query){
       // Return if there's no value
-      if (!pathParameters.value) global.exit(400, []);
+      if (!queryStringParameters.value) global.exit(400, []);
       // Make sure it's a string
-      String(pathParameters.value);
+      String(queryStringParameters.value);
       // Make query
-      query += ` WHERE ${pathParameters.query} like '%${pathParameters.value}%'`;
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
     }
 
     // If the start param has been passed (pagination)
-    if (pathParameters.start){
+    if (queryStringParameters.start){
       // Return if there's no value
-      if (isNaN(pathParameters.start)) global.exit(400, []);
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
       // Return 50 records from the new start
-      init.start = pathParameters.start;
+      init.start = queryStringParameters.start;
     }
 
     // add del
-    if (pathParameters.query){
+    if (queryStringParameters.query){
       query += ` AND _del = 0`;
     } else {
       query += ` WHERE _del = 0`;
@@ -126,31 +143,48 @@ module.exports.getDistrito = async event => {
   `;
 
   // Get Path Params
-  let pathParameters = event['queryStringParameters'];
-  // Log query
+  let pathParameters = event['pathParameters'];
+  // Log Params
   console.log('Path Params: ', pathParameters);
   if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Get Path Params
+  let queryStringParameters = event['queryStringParameters'];
+  // Log query
+  console.log('Query Params: ', queryStringParameters);
+  if (queryStringParameters){
 
     // If there's query available, filter by query value
-    if (pathParameters.query){
+    if (queryStringParameters.query){
       // Return if there's no value
-      if (!pathParameters.value) global.exit(400, []);
+      if (!queryStringParameters.value) global.exit(400, []);
       // Make sure it's a string
-      String(pathParameters.value);
+      String(queryStringParameters.value);
       // Make query
-      query += ` WHERE ${pathParameters.query} like '%${pathParameters.value}%'`;
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
     }
 
     // If the start param has been passed (pagination)
-    if (pathParameters.start){
+    if (queryStringParameters.start){
       // Return if there's no value
-      if (isNaN(pathParameters.start)) global.exit(400, []);
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
       // Return 50 records from the new start
-      init.start = pathParameters.start;
+      init.start = queryStringParameters.start;
     }
 
     // add del
-    if (pathParameters.query){
+    if (queryStringParameters.query){
       query += ` AND _del = 0`;
     } else {
       query += ` WHERE _del = 0`;
@@ -198,17 +232,35 @@ module.exports.getCargo = async event => {
     'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.PRESIDENCIALES_CONGRESIONALES_2020 WHERE _del = 0 GROUP BY cargo'
   ];
 
+
   // Get Path Params
-  let pathParameters = event['queryStringParameters'];
-  // Log query
+  let pathParameters = event['pathParameters'];
+  // Log Params
   console.log('Path Params: ', pathParameters);
   if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Get Path Params
+  let queryStringParameters = event['queryStringParameters'];
+  // Log query
+  console.log('Path Params: ', queryStringParameters);
+  if (queryStringParameters){
     // If the start param has been passed (pagination)
-    if (pathParameters.start){
+    if (queryStringParameters.start){
       // Return if there's no value
-      if (isNaN(pathParameters.start)) global.exit(400, []);
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
       // Return 50 records from the new start
-      init.start = pathParameters.start;
+      init.start = queryStringParameters.start;
     } 
   }
 
@@ -253,20 +305,39 @@ module.exports.getProvincia = async event => {
   }
 
   // Run your query
-  let query = `SELECT provincia, _source, _created_at, _edited_at, _del FROM opendatadb.FUSIONES_COLEGIOS_07_2020 WHERE _del = 0 GROUP BY provincia`;
+  let query = `
+    SELECT provincia, _source, _created_at, _edited_at, _del FROM opendatadb.FUSIONES_COLEGIOS_07_2020 WHERE _del = 0 GROUP BY provincia
+  `;
 
   // Get Path Params
-  let pathParameters = event['queryStringParameters'];
-  // Log query
+  let pathParameters = event['pathParameters'];
+  // Log Params
   console.log('Path Params: ', pathParameters);
   if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Get Query Params
+  let queryStringParameters = event['queryStringParameters'];
+  // Log query
+  console.log('Path Params: ', queryStringParameters);
+  if (queryStringParameters){
 
     // If the start param has been passed (pagination)
-    if (pathParameters.start){
+    if (queryStringParameters.start){
       // Return if there's no value
-      if (isNaN(pathParameters.start)) global.exit(400, []);
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
       // Return 50 records from the new start
-      init.start = pathParameters.start;
+      init.start = queryStringParameters.start;
     }
     
   }  

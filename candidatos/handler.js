@@ -1,21 +1,206 @@
 "use strict";
 
-module.exports.getCandidatos = async event => {
+// Require and initialize outside of your main handler
+const mysql = require('serverless-mysql')({
+  config: {
+    host     : process.env.ENDPOINT,
+    port     : process.env.PORT,
+    database : process.env.DATABASE,
+    user     : process.env.USERNAME,
+    password : process.env.PASSWORD
+  }
+});
+
+global.exit = (code, body) =>{
+  
+  if (!code || !body) {
+    code = 500,
+    body = [{
+      statusMessage: 'internal-error'
+    }];
+  } if (code == 400) {
+    code = 400,
+    body = [{
+      statusMessage: 'bad-request'
+    }];
+  } else {
+    if (body.length === 0) {
+      code = 404,
+      body = [{
+        statusMessage: 'not-found'
+      }];
+    } 
+  }
+
+  body.push({
+    _length: body.length
+  });
+
+  // Run close connection
+  mysql.quit();
+  
   return {
-    statusCode: 200,
-    body: JSON.stringify([
-      {
-        id: "09d21d59-c138-4f70-ae82-3552148d3d43",
-        name: "Jimbo"
-      },
-      {
-        id: "2f8fb730-5d09-4493-aea5-46b3e3f8b08a",
-        name: "Dumbo"
-      },
-      {
-        id: "03d2690f-6d01-4cf1-b947-a8cc0133cc9f",
-        name: "Rambo"
-      }
-    ])
+    statusCode: code,
+    body: JSON.stringify(body)
   };
+};
+
+module.exports.getMunicipales = async event => {
+  console.log('Event: ', event);
+
+  let init = {
+    start: 0,
+    limit: 50
+  }
+
+  // Run your query
+  let query = `
+    SELECT * FROM opendatadb.LISTADO_CANDIDATOS_MUNICIPALES_05_02_2020
+  `;
+
+  // Get Path Params
+  let pathParameters = event['pathParameters'];
+  // Log Params
+  console.log('Path Params: ', pathParameters);
+  if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  let queryStringParameters = event['queryStringParameters'];
+  // Log Params
+  console.log('Query Params: ', queryStringParameters);
+  if (queryStringParameters){
+    // If there's query available, filter by query value
+    if (queryStringParameters.query){
+      // Return if there's no value
+      if (!queryStringParameters.value) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // Make query
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
+    }
+
+    // If the start param has been passed (pagination)
+    if (queryStringParameters.start){
+      // Return if there's no value
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
+      // Return 50 records from the new start
+      init.start = queryStringParameters.start;
+    }
+
+    // add del
+    if (queryStringParameters.query){
+      query += ` AND _del = 0`;
+    } else {
+      query += ` WHERE _del = 0`;
+    }
+    
+  }  
+
+  // add limit
+  query += ` LIMIT ${init.start},${init.limit};`;
+
+  // Log query
+  console.log('Query: ', query);
+  
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query); 
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
+  
+};
+
+module.exports.getPresidenciales = async event => {
+  console.log('Event: ', event);
+
+  let init = {
+    start: 0,
+    limit: 50
+  }
+
+  // Run your query
+  let query = `
+    SELECT * FROM opendatadb.PRESIDENCIALES_CONGRESIONALES_2020
+  `;
+
+  // Get Path Params
+  let pathParameters = event['pathParameters'];
+  // Log Params
+  console.log('Path Params: ', pathParameters);
+  if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  let queryStringParameters = event['queryStringParameters'];
+  // Log Params
+  console.log('Query Params: ', queryStringParameters);
+  if (queryStringParameters){
+    // If there's query available, filter by query value
+    if (queryStringParameters.query){
+      // Return if there's no value
+      if (!queryStringParameters.value) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // Make query
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
+    }
+
+    // If the start param has been passed (pagination)
+    if (queryStringParameters.start){
+      // Return if there's no value
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
+      // Return 50 records from the new start
+      init.start = queryStringParameters.start;
+    }
+
+    // add del
+    if (queryStringParameters.query){
+      query += ` AND _del = 0`;
+    } else {
+      query += ` WHERE _del = 0`;
+    }
+    
+  }  
+
+  // add limit
+  query += ` LIMIT ${init.start},${init.limit};`;
+
+  // Log query
+  console.log('Query: ', query);
+  
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query); 
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
+  
 };
