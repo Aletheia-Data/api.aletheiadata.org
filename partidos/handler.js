@@ -25,7 +25,7 @@ global.exit = (code, body) =>{
     }];
   } else {
     if (body.length === 0) {
-      code = 400,
+      code = 404,
       body = [{
         statusMessage: 'not-found'
       }];
@@ -34,7 +34,10 @@ global.exit = (code, body) =>{
 
   body.push({
     _length: body.length
-  })
+  });
+
+  // Run close connection
+  mysql.quit();
   
   return {
     statusCode: code,
@@ -92,13 +95,14 @@ module.exports.getPartidos = async (event) => {
   // Log query
   console.log('Query: ', query);
   
-  // Male query
-  let results = await mysql.query(query);
-
-  // Run close connection
-  await mysql.quit();
-
-  // Exit from lambda
-  return global.exit(200, results);  
+  let results;
+  try {
+    results  = await mysql.query(query);  
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
 
 };

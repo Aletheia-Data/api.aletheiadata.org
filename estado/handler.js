@@ -25,7 +25,7 @@ global.exit = (code, body) =>{
     }];
   } else {
     if (body.length === 0) {
-      code = 400,
+      code = 404,
       body = [{
         statusMessage: 'not-found'
       }];
@@ -34,7 +34,10 @@ global.exit = (code, body) =>{
 
   body.push({
     _length: body.length
-  })
+  });
+
+  // Run close connection
+  mysql.quit();
   
   return {
     statusCode: code,
@@ -95,14 +98,17 @@ module.exports.getMunicipio = async event => {
   // Log query
   console.log('Query: ', query);
   
-  // Male query
-  let results = await mysql.query(query);
-
-  // Run close connection
-  await mysql.quit();
-
-  // Exit from lambda
-  return global.exit(200, results);  
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query); 
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
+  
 };
 
 module.exports.getDistrito = async event => {
@@ -158,14 +164,17 @@ module.exports.getDistrito = async event => {
   // Log query
   console.log('Query: ', query);
   
-  // Male query
-  let results = await mysql.query(query);
-
-  // Run close connection
-  await mysql.quit();
-
-  // Exit from lambda
-  return global.exit(200, results);  
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query); 
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
+  
 };
 
 module.exports.getCargo = async event => {
@@ -203,9 +212,27 @@ module.exports.getCargo = async event => {
     } 
   }
 
-  let municipal = await mysql.query(queries[0]),
-      municipal_2 = await mysql.query(queries[1]),
-      presidencial = await mysql.query(queries[2]);
+  let municipal;
+  let municipal_2 = await mysql.query(queries[1]);
+  let presidencial = await mysql.query(queries[2]);
+
+  try {
+    municipal = await mysql.query(queries[0]);  
+  } catch (error) {
+    municipal = [{ statusMessage: 'bad-request' }];  
+  }
+
+  try {
+    municipal_2 = await mysql.query(queries[1]);  
+  } catch (error) {
+    municipal_2 = [{ statusMessage: 'bad-request' }];  
+  }
+
+  try {
+    presidencial = await mysql.query(queries[2]);  
+  } catch (error) {
+    presidencial = [{ statusMessage: 'bad-request' }];  
+  }
 
   let res_queries = [{
     presidencial: presidencial,
@@ -213,9 +240,6 @@ module.exports.getCargo = async event => {
     municipal_vice: municipal_2
   }];
   
-  // Run close connection
-  await mysql.quit();
-
   // Exit from lambda
   return global.exit(200, res_queries);  
 };
@@ -253,12 +277,15 @@ module.exports.getProvincia = async event => {
   // Log query
   console.log('Query: ', query);
   
-  // Male query
-  let results = await mysql.query(query);
+  // Make query
+  let results;
+  try {
+    results  = await mysql.query(query);  
+    // Exit from lambda
+    return global.exit(200, results);  
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);  
+  }
 
-  // Run close connection
-  await mysql.quit();
-
-  // Exit from lambda
-  return global.exit(200, results);  
 };
