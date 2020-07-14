@@ -15,5 +15,82 @@ functions:
     handler: handler.getExterior
     events:
       - http:
-          path: /exterior
+          path: /exterior/{year}
           method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-exterior-opree:
+    handler: handler.getExteriorOpree
+    events:
+      - http:
+          path: /exterior/{year}/opree
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-exterior-pais:
+    handler: handler.getExteriorPais
+    events:
+      - http:
+          path: /exterior/{year}/pais
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-exterior-demarcacion:
+    handler: handler.getExteriorDemarcacion
+    events:
+      - http:
+          path: /exterior/{year}/demarcacion
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+
+
+

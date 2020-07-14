@@ -1,0 +1,1 @@
+serverless deploy function --function $1 --stage dev
