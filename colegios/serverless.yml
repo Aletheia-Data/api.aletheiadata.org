@@ -15,5 +15,19 @@ functions:
     handler: handler.getColegios
     events:
       - http:
-          path: /colegios
+          path: /colegios-electorales/{year}
           method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
