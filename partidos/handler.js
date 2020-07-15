@@ -87,7 +87,10 @@ module.exports.getPartidos = async (event) => {
       query += ` WHERE _del = 0`;
     }
     
-  }  
+  } else {
+    // add del
+    query += ` WHERE _del = 0`;
+  } 
 
   // add limit
   query += ` LIMIT ${init.start},${init.limit};`;

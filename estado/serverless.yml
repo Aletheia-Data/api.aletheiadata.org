@@ -11,11 +11,11 @@ provider:
     restApiRootResourceId:
       "Fn::ImportValue": OpenDataGW-rootResourceId
 functions:
-  get-municipio:
-    handler: handler.getMunicipio
+  get-municipios:
+    handler: handler.getMunicipios
     events:
       - http:
-          path: /estado/{year}/municipio
+          path: /estado/{year}/municipios
           method: get
           request:
             parameters:
@@ -31,11 +31,11 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-  get-distrito:
-    handler: handler.getDistrito
+  get-distritos:
+    handler: handler.getDistritos
     events:
       - http:
-          path: /estado/{year}/distrito-municipal
+          path: /estado/{year}/distritos
           method: get
           request:
             parameters:
@@ -51,11 +51,11 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-  get-cargo:
-    handler: handler.getCargo
+  get-cargos:
+    handler: handler.getCargos
     events:
       - http:
-          path: /estado/{year}/cargo
+          path: /estado/{year}/cargos
           method: get
           request:
             parameters:
@@ -69,11 +69,11 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-  get-provincia:
-    handler: handler.getProvincia
+  get-provincias:
+    handler: handler.getProvincias
     events:
       - http:
-          path: /estado/{year}/provincia
+          path: /estado/{year}/provincias
           method: get
           request:
             parameters:

@@ -15,5 +15,79 @@ functions:
     handler: handler.getElecciones
     events:
       - http:
-          path: /elecciones
+          path: /elecciones/{year}
           method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-elecciones-municipales:
+    handler: handler.getEleccionesMunicipales
+    events:
+      - http:
+          path: /elecciones/{year}/municipales
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-elecciones-presidenciales:
+    handler: handler.getEleccionesPresidenciales
+    events:
+      - http:
+          path: /elecciones/{year}/presidenciales
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
+  get-elecciones-congresuales:
+    handler: handler.getEleccionesCongresuales
+    events:
+      - http:
+          path: /elecciones/{year}/congresuales
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(../serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(../serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}

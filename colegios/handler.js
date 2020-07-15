@@ -104,6 +104,9 @@ module.exports.getColegios = async event => {
       query += ` WHERE _del = 0`;
     }
     
+  } else {
+    // add del
+    query += ` WHERE _del = 0`;
   }  
 
   // add limit

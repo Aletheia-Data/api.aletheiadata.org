@@ -45,7 +45,7 @@ global.exit = (code, body) =>{
   };
 };
 
-module.exports.getMunicipio = async event => {
+module.exports.getMunicipios = async event => {
   console.log('Event: ', event);
 
   let init = {
@@ -107,7 +107,10 @@ module.exports.getMunicipio = async event => {
       query += ` WHERE _del = 0`;
     }
     
-  }  
+  } else {
+    // add del
+    query += ` WHERE _del = 0`;
+  } 
 
   // add limit
   query += ` LIMIT ${init.start},${init.limit};`;
@@ -128,7 +131,7 @@ module.exports.getMunicipio = async event => {
   
 };
 
-module.exports.getDistrito = async event => {
+module.exports.getDistritos = async event => {
   console.log('Event: ', event);
 
   let init = {
@@ -190,7 +193,10 @@ module.exports.getDistrito = async event => {
       query += ` WHERE _del = 0`;
     }
     
-  }  
+  } else {
+    // add del
+    query += ` WHERE _del = 0`;
+  }
 
   // add limit
   query += ` LIMIT ${init.start},${init.limit};`;
@@ -211,7 +217,7 @@ module.exports.getDistrito = async event => {
   
 };
 
-module.exports.getCargo = async event => {
+module.exports.getCargos = async event => {
   console.log('Event: ', event);
 
   let init = {
@@ -219,17 +225,13 @@ module.exports.getCargo = async event => {
     limit: 50
   }
 
-  let fields = [
-    'cargo'
-  ]
-
   let queries = [
     /* cargo municipal */
-    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_2020 WHERE _del = 0 GROUP BY cargo',
+    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_2020',
     /* cargo vice */
-    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_VICE_2020 WHERE _del = 0 GROUP BY cargo',
+    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_VICE_2020',
     /* cargo vice */
-    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.PRESIDENCIALES_CONGRESIONALES_2020 WHERE _del = 0 GROUP BY cargo'
+    'SELECT cargo, _source, _created_at, _edited_at, _del FROM opendatadb.PRESIDENCIALES_CONGRESIONALES_2020'
   ];
 
 
@@ -250,19 +252,59 @@ module.exports.getCargo = async event => {
     }
   }
 
-  // Get Path Params
-  let queryStringParameters = event['queryStringParameters'];
-  // Log query
-  console.log('Path Params: ', queryStringParameters);
-  if (queryStringParameters){
-    // If the start param has been passed (pagination)
-    if (queryStringParameters.start){
-      // Return if there's no value
-      if (isNaN(queryStringParameters.start)) global.exit(400, []);
-      // Return 50 records from the new start
-      init.start = queryStringParameters.start;
-    } 
-  }
+  // Make query
+  let res_q = [];
+  queries.forEach(query => {
+    let queryStringParameters = event['queryStringParameters'];
+    // Log Params
+    console.log('Query Params: ', queryStringParameters);
+    if (queryStringParameters){
+      // Return if there's no value or query
+      if ((!queryStringParameters.value || !queryStringParameters.value) && !queryStringParameters.start) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // If the start param has been passed (pagination)
+      if (queryStringParameters.start){
+        // Return if there's no value
+        if (isNaN(queryStringParameters.start)) global.exit(400, []);
+        // Return 50 records from the new start
+        init.start = queryStringParameters.start;
+      }
+      // add del
+      if (queryStringParameters.query){
+        // Make query
+        query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;  
+        query += ` AND _del = 0`;
+      } else {
+        query += ` WHERE _del = 0`;
+      }
+      // add group by
+      query += ` GROUP BY cargo`;
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+      
+    } else{
+      // add del
+      query += ` WHERE _del = 0`;
+      // add group by
+      query += ` GROUP BY cargo`;
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+    }
+  });
+
+  // update queries
+  queries = res_q;
 
   let municipal;
   let municipal_2 = await mysql.query(queries[1]);
@@ -296,7 +338,7 @@ module.exports.getCargo = async event => {
   return global.exit(200, res_queries);  
 };
 
-module.exports.getProvincia = async event => {
+module.exports.getProvincias = async event => {
   console.log('Event: ', event);
 
   let init = {
@@ -306,7 +348,7 @@ module.exports.getProvincia = async event => {
 
   // Run your query
   let query = `
-    SELECT provincia, _source, _created_at, _edited_at, _del FROM opendatadb.FUSIONES_COLEGIOS_07_2020 WHERE _del = 0 GROUP BY provincia
+    SELECT provincia, _source, _created_at, _edited_at, _del FROM opendatadb.FUSIONES_COLEGIOS_07_2020
   `;
 
   // Get Path Params
@@ -326,11 +368,19 @@ module.exports.getProvincia = async event => {
     }
   }
 
-  // Get Query Params
   let queryStringParameters = event['queryStringParameters'];
-  // Log query
-  console.log('Path Params: ', queryStringParameters);
+  // Log Params
+  console.log('Query Params: ', queryStringParameters);
   if (queryStringParameters){
+    // If there's query available, filter by query value
+    if (queryStringParameters.query){
+      // Return if there's no value
+      if (!queryStringParameters.value) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // Make query
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
+    }
 
     // If the start param has been passed (pagination)
     if (queryStringParameters.start){
@@ -339,9 +389,21 @@ module.exports.getProvincia = async event => {
       // Return 50 records from the new start
       init.start = queryStringParameters.start;
     }
-    
-  }  
 
+    // add del
+    if (queryStringParameters.query){
+      query += ` AND _del = 0`;
+    } else {
+      query += ` WHERE _del = 0`;
+    }
+    
+  } else {
+    // add del
+    query += ` WHERE _del = 0`;
+  }
+
+  // add group by
+  query += ` GROUP BY provincia`;
   // add limit
   query += ` LIMIT ${init.start},${init.limit};`;
 

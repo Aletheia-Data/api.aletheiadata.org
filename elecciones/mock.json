@@ -3,8 +3,8 @@
         "year": 2020
     },
     "queryStringParameters": {
-        "query": "test",
-        "value": "test",
-        "start": 15
+        "query": "municipio",
+        "value": "altamira",
+        "start": 0
     }
 }

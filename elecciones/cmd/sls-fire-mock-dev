@@ -1,0 +1,1 @@
+serverless invoke local --function $1 --stage dev --path mock.json --log

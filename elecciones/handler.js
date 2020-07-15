@@ -1,21 +1,421 @@
 "use strict";
 
-module.exports.getElecciones = async event => {
+// Require and initialize outside of your main handler
+const mysql = require("serverless-mysql")({
+  config: {
+    host: process.env.ENDPOINT,
+    port: process.env.PORT,
+    database: process.env.DATABASE,
+    user: process.env.USERNAME,
+    password: process.env.PASSWORD,
+  },
+});
+
+global.exit = (code, body) => {
+  if (!code || !body) {
+    (code = 500),
+      (body = [
+        {
+          statusMessage: "internal-error",
+        },
+      ]);
+  }
+  if (code == 400) {
+    (code = 400),
+      (body = [
+        {
+          statusMessage: "bad-request",
+        },
+      ]);
+  } else {
+    if (body.length === 0) {
+      (code = 404),
+        (body = [
+          {
+            statusMessage: "not-found",
+          },
+        ]);
+    }
+  }
+
+  body.push({
+    _length: body.length,
+  });
+
+  // Run close connection
+  mysql.quit();
+
   return {
-    statusCode: 200,
-    body: JSON.stringify([
-      {
-        id: "09d21d59-c138-4f70-ae82-3552148d3d43",
-        name: "Jimbo"
-      },
-      {
-        id: "2f8fb730-5d09-4493-aea5-46b3e3f8b08a",
-        name: "Dumbo"
-      },
-      {
-        id: "03d2690f-6d01-4cf1-b947-a8cc0133cc9f",
-        name: "Rambo"
-      }
-    ])
+    statusCode: code,
+    body: JSON.stringify(body),
   };
+};
+
+module.exports.getElecciones = async (event) => {
+  console.log('Event: ', event);
+
+  let init = {
+    start: 0,
+    limit: 50
+  }
+
+  let queries = [
+    /* municipal */
+    'SELECT * FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_2020',
+    /* vice */
+    'SELECT * FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_VICE_2020'
+  ];
+
+  // Get Path Params
+  let pathParameters = event['pathParameters'];
+  // Log Params
+  console.log('Path Params: ', pathParameters);
+  if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Make query
+  let res_q = [];
+  queries.forEach(query => {
+    let queryStringParameters = event['queryStringParameters'];
+    // Log Params
+    console.log('Query Params: ', queryStringParameters);
+    if (queryStringParameters){
+      // Return if there's no value or query
+      if ((!queryStringParameters.value || !queryStringParameters.value) && !queryStringParameters.start) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // If the start param has been passed (pagination)
+      if (queryStringParameters.start){
+        // Return if there's no value
+        if (isNaN(queryStringParameters.start)) global.exit(400, []);
+        // Return 50 records from the new start
+        init.start = queryStringParameters.start;
+      }
+      // add del
+      if (queryStringParameters.query){
+        // Make query
+        query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;  
+        query += ` AND _del = 0`;
+      } else {
+        query += ` WHERE _del = 0`;
+      }
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+      
+    } else{
+      // add del
+      query += ` WHERE _del = 0`;
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+    }
+  });
+
+  // update queries
+  queries = res_q;
+
+  let municipal;
+  try {
+    municipal = await mysql.query(queries[0]);  
+    municipal.push({ _length: municipal.length });
+  } catch (error) {
+    municipal = [{ statusMessage: 'bad-request' }];  
+  }
+
+  let municipal_2;
+  try {
+    municipal_2 = await mysql.query(queries[1]);  
+    municipal_2.push({ _length: municipal_2.length });
+  } catch (error) {
+    municipal_2 = [{ statusMessage: 'bad-request' }];  
+  }
+
+  let res_queries = [{
+    municipal: municipal,
+    municipal_vice: municipal_2
+  }];
+  
+  // Exit from lambda
+  return global.exit(200, res_queries);  
+};
+
+module.exports.getEleccionesMunicipales = async (event) => {
+  console.log('Event: ', event);
+
+  let init = {
+    start: 0,
+    limit: 50
+  }
+
+  let queries = [
+    /* municipal */
+    'SELECT * FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_2020',
+    /* vice */
+    'SELECT * FROM opendatadb.ELECCIONES_EXTRAORDINARIAS_MUNICIPALES_RESULTADOS_VICE_2020'
+  ];
+
+
+  // Get Path Params
+  let pathParameters = event['pathParameters'];
+  // Log Params
+  console.log('Path Params: ', pathParameters);
+  if (pathParameters){
+    // Check if there's year and it's valid
+    if (pathParameters.year){
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (
+        year !== 2020
+      ){
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  // Make query
+  let res_q = [];
+  queries.forEach(query => {
+    let queryStringParameters = event['queryStringParameters'];
+    // Log Params
+    console.log('Query Params: ', queryStringParameters);
+    if (queryStringParameters){
+      // Return if there's no value or query
+      if ((!queryStringParameters.value || !queryStringParameters.value) && !queryStringParameters.start) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // If the start param has been passed (pagination)
+      if (queryStringParameters.start){
+        // Return if there's no value
+        if (isNaN(queryStringParameters.start)) global.exit(400, []);
+        // Return 50 records from the new start
+        init.start = queryStringParameters.start;
+      }
+      // add del
+      if (queryStringParameters.query){
+        // Make query
+        query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;  
+        query += ` AND _del = 0`;
+      } else {
+        query += ` WHERE _del = 0`;
+      }
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+      
+    } else{
+      // add del
+      query += ` WHERE _del = 0`;
+      // add limit
+      query += ` LIMIT ${init.start},${init.limit};`;
+      // Log query
+      console.log('Query: ', query);
+      // Push new query
+      res_q.push(query);
+      queries = res_q;
+    }
+  });
+
+  // update queries
+  queries = res_q;
+
+  let municipal;
+  try {
+    municipal = await mysql.query(queries[0]);  
+    municipal.push({ _length: municipal.length });
+  } catch (error) {
+    municipal = [{ statusMessage: 'bad-request' }];  
+  }
+
+  let municipal_2;
+  try {
+    municipal_2 = await mysql.query(queries[1]); 
+    municipal_2.push({ _length: municipal_2.length }); 
+  } catch (error) {
+    municipal_2 = [{ statusMessage: 'bad-request' }];  
+  }
+
+  let res_queries = [{
+    municipal: municipal,
+    municipal_vice: municipal_2
+  }];
+  
+  // Exit from lambda
+  return global.exit(200, res_queries);
+};
+
+module.exports.getEleccionesPresidenciales = async (event) => {
+  return global.exit(200, [{ statusMessage: "not yet available, stay tune!" }]);
+  console.log("Event: ", event);
+
+  let init = {
+    start: 0,
+    limit: 50,
+  };
+
+  // Run your query
+  let query = `
+    SELECT distinct(pais_votacion), _source FROM opendatadb.EXTERIOR_14_07_2020
+  `;
+
+  // Get Path Params
+  let pathParameters = event["pathParameters"];
+  // Log Params
+  console.log("Path Params: ", pathParameters);
+  if (pathParameters) {
+    // Check if there's year and it's valid
+    if (pathParameters.year) {
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (year !== 2020) {
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  let queryStringParameters = event["queryStringParameters"];
+  // Log Params
+  console.log("Query Params: ", queryStringParameters);
+  if (queryStringParameters) {
+    // If there's query available, filter by query value
+    if (queryStringParameters.query) {
+      // Return if there's no value
+      if (!queryStringParameters.value) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // Make query
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
+    }
+
+    // If the start param has been passed (pagination)
+    if (queryStringParameters.start) {
+      // Return if there's no value
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
+      // Return 50 records from the new start
+      init.start = queryStringParameters.start;
+    }
+
+    // add del
+    if (queryStringParameters.query) {
+      query += ` AND _del = 0`;
+    } else {
+      query += ` WHERE _del = 0`;
+    }
+  }
+
+  // add limit
+  query += ` LIMIT ${init.start},${init.limit};`;
+
+  // Log query
+  console.log("Query: ", query);
+
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query);
+    // Exit from lambda
+    return global.exit(200, results);
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);
+  }
+};
+
+module.exports.getEleccionesCongresuales = async (event) => {
+  return global.exit(200, [{ statusMessage: "not yet available, stay tune!" }]);
+  console.log("Event: ", event);
+
+  let init = {
+    start: 0,
+    limit: 50,
+  };
+
+  // Run your query
+  let query = `
+    SELECT distinct(demarcacion), _source FROM opendatadb.EXTERIOR_14_07_2020
+  `;
+
+  // Get Path Params
+  let pathParameters = event["pathParameters"];
+  // Log Params
+  console.log("Path Params: ", pathParameters);
+  if (pathParameters) {
+    // Check if there's year and it's valid
+    if (pathParameters.year) {
+      let year = parseInt(pathParameters.year);
+      // if the year is not available, return message
+      if (year !== 2020) {
+        return global.exit(404, []);
+      }
+    }
+  }
+
+  let queryStringParameters = event["queryStringParameters"];
+  // Log Params
+  console.log("Query Params: ", queryStringParameters);
+  if (queryStringParameters) {
+    // If there's query available, filter by query value
+    if (queryStringParameters.query) {
+      // Return if there's no value
+      if (!queryStringParameters.value) global.exit(400, []);
+      // Make sure it's a string
+      String(queryStringParameters.value);
+      // Make query
+      query += ` WHERE ${queryStringParameters.query} like '%${queryStringParameters.value}%'`;
+    }
+
+    // If the start param has been passed (pagination)
+    if (queryStringParameters.start) {
+      // Return if there's no value
+      if (isNaN(queryStringParameters.start)) global.exit(400, []);
+      // Return 50 records from the new start
+      init.start = queryStringParameters.start;
+    }
+
+    // add del
+    if (queryStringParameters.query) {
+      query += ` AND _del = 0`;
+    } else {
+      query += ` WHERE _del = 0`;
+    }
+  }
+
+  // add limit
+  query += ` LIMIT ${init.start},${init.limit};`;
+
+  // Log query
+  console.log("Query: ", query);
+
+  // Make query
+  let results;
+  try {
+    results = await mysql.query(query);
+    // Exit from lambda
+    return global.exit(200, results);
+  } catch (error) {
+    // Exit from lambda
+    return global.exit(400, []);
+  }
 };

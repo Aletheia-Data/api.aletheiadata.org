@@ -51,11 +51,11 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-  get-exterior-pais:
-    handler: handler.getExteriorPais
+  get-exterior-paises:
+    handler: handler.getExteriorPaises
     events:
       - http:
-          path: /exterior/{year}/pais
+          path: /exterior/{year}/paises
           method: get
           request:
             parameters:
@@ -71,11 +71,11 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-  get-exterior-demarcacion:
-    handler: handler.getExteriorDemarcacion
+  get-exterior-demarcaciones:
+    handler: handler.getExteriorDemarcaciones
     events:
       - http:
-          path: /exterior/{year}/demarcacion
+          path: /exterior/{year}/demarcaciones
           method: get
           request:
             parameters:
@@ -91,6 +91,3 @@ functions:
       DATABASE: ${file(../serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(../serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(../serverless.env.yml):${opt:stage}.PASSWORD}
-
-
-
