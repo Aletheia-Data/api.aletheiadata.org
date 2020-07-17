@@ -138,7 +138,7 @@ module.exports.getExteriorOpree = async event => {
 
   // Run your query
   let query = `
-    SELECT distinct(opree), _source FROM opendatadb.EXTERIOR_14_07_2020
+    SELECT distinct(opree), _source, _created_at, _edited_at, _del FROM opendatadb.EXTERIOR_14_07_2020
   `;
 
   // Get Path Params
@@ -220,7 +220,7 @@ module.exports.getExteriorPaises = async event => {
 
   // Run your query
   let query = `
-    SELECT distinct(pais_votacion), _source FROM opendatadb.EXTERIOR_14_07_2020
+    SELECT distinct(pais_votacion), _source, _created_at, _edited_at, _del FROM opendatadb.EXTERIOR_14_07_2020
   `;
 
   // Get Path Params
@@ -302,7 +302,7 @@ module.exports.getExteriorDemarcaciones = async event => {
 
   // Run your query
   let query = `
-    SELECT distinct(demarcacion), _source FROM opendatadb.EXTERIOR_14_07_2020
+    SELECT distinct(demarcacion), _source, _created_at, _edited_at, _del FROM opendatadb.EXTERIOR_14_07_2020
   `;
 
   // Get Path Params
