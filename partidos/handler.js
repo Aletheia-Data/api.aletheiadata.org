@@ -23,6 +23,11 @@ global.exit = (code, body) =>{
     body = [{
       statusMessage: 'bad-request'
     }];
+  } if (code == 800) {
+    code = 800,
+    body = [{
+      statusMessage: 'i stay warmed'
+    }];
   } else {
     if (body.length === 0) {
       code = 404,
@@ -47,6 +52,12 @@ global.exit = (code, body) =>{
 
 module.exports.getPartidos = async (event) => {
   console.log('Event: ', event);
+
+  /** Immediate response for WarmUP plugin */
+  if (event.source === 'serverless-plugin-warmup') {
+    console.log('WarmUP - Lambda is warm!')
+    return global.exit(800, []);
+  }
 
   let init = {
     start: 0,

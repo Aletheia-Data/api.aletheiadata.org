@@ -5,11 +5,23 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+      - 'lambda:InvokeFunction'
+    Resource: "*"
   apiGateway:
     restApiId:
       "Fn::ImportValue": OpenDataGW-restApiId
     restApiRootResourceId:
       "Fn::ImportValue": OpenDataGW-rootResourceId
+plugins:
+  - serverless-plugin-warmup
+custom:
+  warmup:
+    enabled: false
+    events:
+      - schedule: rate(5 minutes)
 functions:
   get-partidos:
     handler: handler.getPartidos

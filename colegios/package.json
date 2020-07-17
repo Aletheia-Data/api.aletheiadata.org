@@ -11,5 +11,7 @@
   "dependencies": {
     "serverless-mysql": "^1.5.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "serverless-plugin-warmup": "^4.9.0"
+  }
 }
