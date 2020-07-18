@@ -1,0 +1,7 @@
+{ 
+    "queryStringParameters": {
+        "query":"sigla",
+        "value":"ddd",
+        "start": 0
+    }
+}
