@@ -1,0 +1,105 @@
+org: enzovezzaro
+app: opendatadr
+service: mirex-api-v1
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+      - 'lambda:InvokeFunction'
+    Resource: "*"
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": OpenDataGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": OpenDataGW-rootResourceId
+plugins:
+  - serverless-plugin-warmup
+custom:
+  warmup:
+    enabled: false
+    events:
+      - schedule: rate(5 minutes)
+functions:
+  get-contratados:
+    handler: ./contratados/handler.getContratados
+    events:
+      - http:
+          path: /mirex/personal/contratados/{year}
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+  get-fijos:
+    handler: ./fijos/handler.getFijos
+    events:
+      - http:
+          path: /mirex/personal/fijos/{year}
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+  get-probatorio:
+    handler: ./periodo_probatorio/handler.getProbatorio
+    events:
+      - http:
+          path: /mirex/personal/periodo-probatorio/{year}
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+  get-exterior:
+    handler: ./servicio_exterior/handler.getExterior
+    events:
+      - http:
+          path: /mirex/personal/exterior/{year}
+          method: get
+          request:
+            parameters:
+              paths:
+                year: true
+              querystrings:
+                start: false
+                query: false
+                value: false
+    environment:
+      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
+      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
+      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
+      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
+      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}

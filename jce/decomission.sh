@@ -3,37 +3,33 @@
 echo "Demolishing your awesome stacks..."
 
 cd candidatos
-serverless remove
+serverless remove --stage dev
 sleep 5s
 
 cd ..
 cd colegios
-serverless remove
+serverless remove --stage dev
 sleep 5s
 
 cd ..
 cd exterior
-serverless remove
+serverless remove --stage dev
 sleep 5s
 
 cd ..
 cd partidos
-serverless remove
+serverless remove --stage dev
 sleep 5s
 
 cd ..
 cd estado
-serverless remove
+serverless remove --stage dev
 sleep 5s
 
 cd ..
 cd elecciones
-serverless remove
+serverless remove --stage dev
 sleep 5s
-
-cd ..
-cd gateway
-serverless remove
 
 echo "Demolishing complete :)"
 read

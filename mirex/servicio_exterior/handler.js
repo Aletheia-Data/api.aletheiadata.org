@@ -50,7 +50,7 @@ global.exit = (code, body) =>{
   };
 };
 
-module.exports.getContratados = async (event) => {
+module.exports.getExterior = async (event) => {
   console.log('Event: ', event);
 
   /** Immediate response for WarmUP plugin */
@@ -65,7 +65,7 @@ module.exports.getContratados = async (event) => {
   }
 
   // Run your query
-  let query = `SELECT * FROM mirex.NOMINA_CONTRATADOS_2020`;
+  let query = `SELECT * FROM mirex.NOMINA_PERSONAL_SERVICIO_EXTERIOR_2020`;
 
   // Get Path Params
   let pathParameters = event['queryStringParameters'];

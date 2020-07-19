@@ -65,7 +65,7 @@ module.exports.getFijos = async (event) => {
   }
 
   // Run your query
-  let query = `SELECT * FROM mirex.NOMINA_FIJOS_2020`;
+  let query = `SELECT * FROM mirex.NOMINA_PERSONAL_FIJO_2020`;
 
   // Get Path Params
   let pathParameters = event['queryStringParameters'];
