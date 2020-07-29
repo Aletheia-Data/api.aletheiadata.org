@@ -1,0 +1,17 @@
+{
+  "name": "mirex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "enzo vezzaro",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^7.8.0"
+  },
+  "devDependencies": {
+    "serverless-plugin-warmup": "^4.9.0"
+  }
+}

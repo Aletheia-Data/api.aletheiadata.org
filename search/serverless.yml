@@ -1,0 +1,35 @@
+org: enzovezzaro
+app: opendatadr
+service: search-api-v1
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+      - 'lambda:InvokeFunction'
+    Resource: "*"
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": OpenDataGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": OpenDataGW-rootResourceId
+plugins:
+  - serverless-plugin-warmup
+custom:
+  warmup:
+    enabled: false
+    events:
+      - schedule: rate(5 minutes)
+functions:
+  get-all:
+    handler: ./search-all/handler.getAll
+    events:
+      - http:
+          path: /search/all
+          method: get
+    environment:
+      ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
+      ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
+      ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
