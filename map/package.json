@@ -1,5 +1,5 @@
 {
-  "name": "jce",
+  "name": "mirex",
   "version": "1.0.0",
   "description": "",
   "main": "handler.js",
@@ -9,7 +9,6 @@
   "author": "enzo vezzaro",
   "license": "ISC",
   "dependencies": {
-    "serverless-mysql": "^1.5.4",
     "@elastic/elasticsearch": "^7.8.0"
   },
   "devDependencies": {

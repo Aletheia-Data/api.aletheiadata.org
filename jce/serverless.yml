@@ -163,6 +163,9 @@ functions:
       DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+      ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
+      ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
+      ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
   get-elecciones-municipales:
     handler: ./elecciones/handler.getEleccionesMunicipales
     events:
@@ -183,6 +186,9 @@ functions:
       DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
       USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
       PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+      ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
+      ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
+      ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
   get-elecciones-presidenciales:
     handler: ./elecciones/handler.getEleccionesPresidenciales
     events:
@@ -198,11 +204,9 @@ functions:
                 query: false
                 value: false
     environment:
-      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
-      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
-      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
-      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
-      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+      ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
+      ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
+      ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
   get-elecciones-congresuales:
     handler: ./elecciones/handler.getEleccionesCongresuales
     events:
@@ -218,11 +222,9 @@ functions:
                 query: false
                 value: false
     environment:
-      ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ENDPOINT}
-      PORT: ${file(./serverless.env.yml):${opt:stage}.PORT}
-      DATABASE: ${file(./serverless.env.yml):${opt:stage}.DATABASE}
-      USERNAME: ${file(./serverless.env.yml):${opt:stage}.USERNAME}
-      PASSWORD: ${file(./serverless.env.yml):${opt:stage}.PASSWORD}
+      ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
+      ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
+      ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
   get-municipios:
     handler: ./estado/handler.getMunicipios
     events:
