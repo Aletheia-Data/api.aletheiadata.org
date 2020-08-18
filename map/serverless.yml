@@ -33,3 +33,10 @@ functions:
       ELASTICSEARCH_ENDPOINT: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_ENDPOINT}
       ELASTICSEARCH_USER: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_USER}
       ELASTICSEARCH_PWD: ${file(./serverless.env.yml):${opt:stage}.ELASTICSEARCH_PWD}
+  get-provinces:
+    handler: ./provinces/handler.getProvinces
+    events:
+      - http:
+          path: /map/provinces/
+          method: get
+    environment:
