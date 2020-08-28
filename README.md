@@ -1,15 +1,19 @@
-# Aletheia 
+# API Aletheia Data
 
 es un proyecto open source de esfuerzo ciudadano que busca incentivar las entidades tanto públicas como privadas a facilitar el acceso a la información pública de modo que pueda tener un impacto social más relevante. 
 
 Nuestra misión es democratizar la información pública y facilitar el acceso a esta.
 
-## Installation
+## Requirements
 
-- Root
-```bash
-npm install
-```
+- [npm](https://www.npmjs.com/)
+- [serverless](https://www.serverless.com/)
+
+## Cloud Provider
+
+- Amazon AWS 
+
+## Installation
 
 - Api Gateway
 ```bash
