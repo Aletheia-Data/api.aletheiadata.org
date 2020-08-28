@@ -45,7 +45,7 @@ sh install.sh
 
 ## Contributing
 
-Las pull request son bienvenidas. Para cambios importantes, abra primero un (issue)[https://github.com/EnzoVezzaro/opendatadr/issues/new] para discutir qué le gustaría cambiar.
+Las pull request son bienvenidas. Para cambios importantes, abra primero un (issue)[https://github.com/EnzoVezzaro/api.aletheiadata.org/issues/new] para discutir qué le gustaría cambiar.
 
 Por favor asegúrese de hacer las pruebas correspondondientes.
 
