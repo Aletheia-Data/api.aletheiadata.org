@@ -1,7 +1,0 @@
-{ 
-    "queryStringParameters": {
-        "query":"municipio",
-        "value":"XXX",
-        "start": 15
-    }
-}
