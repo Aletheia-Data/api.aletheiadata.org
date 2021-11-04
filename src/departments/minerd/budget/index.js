@@ -1,5 +1,5 @@
 const axios = require('axios');
-const utils = require('../../../utils');
+const utils = require('../../../services');
 
 exports.findByAll = async function(req, res) {
   /*
