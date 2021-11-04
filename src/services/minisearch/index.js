@@ -54,8 +54,7 @@ const queryFile = async (params, query) => {
         console.log('query: ', query);
         if (!query.fields && !query.value){
           // get all
-          console.log('queryFile - CAUTION - query without limit');
-          resolve(data);
+          resolve('missing params');
           return;
         } else if (query){
           if (!query.fields){
