@@ -27,7 +27,8 @@ const queryFile = async (params, query) => {
         let fields = Object.keys(getJsonFromCID.body[0]);
         console.log('init minisearch - get header fields: ', fields);
         // if info is tru, return all the info of the doc
-        if (query.info){
+        var isTrueSet = (query.info === 'true');
+        if (isTrueSet){
           resolve({
             cid: params.cid,
             fields: fields
