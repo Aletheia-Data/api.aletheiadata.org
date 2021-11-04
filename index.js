@@ -60,7 +60,7 @@ app.get(`/${services_version}/services/search/:type/:cid`, services.search);
 const api_version = process.env.API_VERSION;
 console.log('activating endpoints for version: ', services_version);
 
-app.get(`/${api_version}/:department/:cid/:type`, departments.getDepartments);
+app.get(`/${api_version}/:department/:type/:host/:cid/`, departments.getDepartments);
 
 /******************/
 /***** LISTEN PORT ******/

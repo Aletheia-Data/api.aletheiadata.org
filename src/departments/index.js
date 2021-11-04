@@ -25,18 +25,9 @@ exports.getDepartments = async (req, res) => {
     info: 'true' 
   }
   */
-  const department = params.department;
-  console.log('getDepartments - department -----', department);
-  switch (department) {
-    case 'minerd':
-      // do query
-      console.log('getDepartments - department -----', department);
-      services.search(req, res);
-      break;
-    default:
-      // alert user
-      exit(res, 200, 'department not available.');
-      break;
-  }
+  const departments = ['minerd'];
+  if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
+  console.log('getDepartments - department -----', params.department);
+  services.search(req, res);
   console.log('done getDepartments ------');
 }
