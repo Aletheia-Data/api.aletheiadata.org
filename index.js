@@ -50,7 +50,7 @@ const services_version = process.env.SERVICES_VERSION;
 console.log('activating services for version: ', services_version);
 
 app.get(`/${services_version}/services/transform-csv/:host/:cid`, services.getJson);
-app.get(`/${services_version}/services/search/:type/:cid`, services.search);
+app.get(`/${services_version}/services/search/:host/:type/:cid`, services.search);
 
 /******************/
 /******************/
