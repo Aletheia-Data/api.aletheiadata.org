@@ -54,7 +54,7 @@ const queryFile = async (params, query) => {
         console.log('query: ', query);
         if (!query.fields && !query.value){
           // get all
-          resolve('missing params');
+          resolve(data);
           return;
         } else if (query){
           if (!query.fields){
