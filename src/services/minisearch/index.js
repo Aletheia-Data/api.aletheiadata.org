@@ -82,13 +82,14 @@ const queryFile = async (params, query) => {
           if (query.limit){
             console.log('queryFile - query limit: ', query.limit);
             if (!utils.isNumber(query.limit)) {
-              resolve('limit not valid');
-              return;
-            }
-            // check if limit = 'none', if so give all results
-            if (query.limit === 'none'){
-              console.log('queryFile - CAUTION - query without limit');
-              queryResult = await miniSearch.search(query.value, { fields: query_fields });
+              if (query.limit !== 'none'){
+                resolve('limit not valid');
+                return;
+              } else {
+                // check if limit = 'none', if so give all results
+                console.log('queryFile - CAUTION - query without limit');
+                queryResult = await miniSearch.search(query.value, { fields: query_fields });
+              }
             } else {
               console.log('queryFile - query limit by user');
               queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, query.limit);
