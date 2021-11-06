@@ -71,7 +71,9 @@ const queryFile = async (params, query) => {
           const query_fields = query.fields.split(',');
           query_fields.map((qf)=>{
             // check if the field pass exists on the file
+            console.log(qf);
             if (!fields.includes(qf)){
+              console.log(fields.includes(qf));
               resolve('one or more fields are not valid');
               return;
             }
