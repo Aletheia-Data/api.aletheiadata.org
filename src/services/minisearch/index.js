@@ -10,7 +10,7 @@ const queryFile = async (params, query) => {
     if (!params.type) { reject('missing file type'); return;}
     if (!params.host) { reject('missing host'); return;}
     // file type
-    const fileType = ['json'];
+    const fileType = ['csv'];
     if (!fileType.includes(params.type)) { reject('wrong type'); return; }
     // http://localhost:8000/services/transform-csv/ipfs/bafybeifds2zwfw7zn7gbh7oa2z23xyuyg6rbs6xizbsvxtg5xrfl4quo3u
     // set host on params as it's a IPFS file
