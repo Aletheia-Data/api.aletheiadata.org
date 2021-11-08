@@ -1,6 +1,8 @@
 const PORT = process.env.PORT || 8000
 const express = require('express')
+const apicache = require('apicache')
 const app = express();
+let cache = apicache.middleware;
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -13,6 +15,8 @@ const departments = require('./src/departments');
 /***** ENTRY ******/
 /******************/
 /******************/
+app.use(cache('1 day'));
+
 app.get('/', (req, res) => {
     res.json('Welcome to Aletheia Data API')
 })
