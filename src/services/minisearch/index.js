@@ -46,7 +46,7 @@ const queryFile = async (params, query) => {
           } 
         })
         // Index all documents
-        miniSearch.addAll(data);
+        await miniSearch.addAll(data);
         // Search with default options
         // Search only specific fields
         // init searchm, sorting, filtering

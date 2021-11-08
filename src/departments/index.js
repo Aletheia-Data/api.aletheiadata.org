@@ -14,6 +14,6 @@ exports.getDepartments = async (req, res) => {
   const departments = ['dgcp','inefi','jce','ccrd','dicom','digepres','dncd','minerd','mopc','msp','mm','paps','pn','superate'];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
-  services.search(req, res);
+  await services.search(req, res);
   console.log('done getDepartments ------');
 }
