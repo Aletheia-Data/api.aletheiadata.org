@@ -11,7 +11,24 @@ exports.getDepartments = async (req, res) => {
   console.log('starting getDepartments ------');
   const { params, query } = req; 
   console.log('getDepartments - get params ------', params, query);
-  const departments = ['dgcp','inefi','jce','ccrd','dicom','digepres','dncd','minerd','mopc','msp','mm','paps','pn','superate'];
+  const departments = [
+    'dgcp',
+    'inefi',
+    'jce',
+    'ccrd',
+    'dicom',
+    'digepres',
+    'dncd',
+    'minerd',
+    'mopc',
+    'msp',
+    'mm',
+    'paps',
+    'pn',
+    'superate',
+    'asde',
+    'tnrd'
+  ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
   await services.search(req, res);
