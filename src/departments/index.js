@@ -12,7 +12,7 @@ exports.getDepartments = async (req, res) => {
   const { params, query } = req; 
   console.log('getDepartments - get params ------', params, query);
   const departments = [
-    'dgcp',
+    'dgcp', 
     'inefi',
     'jce',
     'ccrd',
@@ -28,7 +28,9 @@ exports.getDepartments = async (req, res) => {
     'superate',
     'asde',
     'tnrd',
-    'senasa'
+    'senasa',
+    'mirex',
+    'miderec'
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
