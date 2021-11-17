@@ -32,7 +32,8 @@ const CSVtoJSON = async function(params) {
   console.log('transforming file from url: ', url);
   
   const options = {
-    header: true
+    header: true,
+    encoding: "latin1"
   };
 
   const parseStream = Papa.parse(Papa.NODE_STREAM_INPUT, options);
