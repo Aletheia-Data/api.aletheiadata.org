@@ -65,10 +65,10 @@ const api_version = process.env.API_VERSION;
 console.log('activating endpoints for version: ', services_version);
 
 /* DEPRECATED */
-app.get(`/v2/:department/:type/:host/:cid/`, departments.getDepartments);
+app.get(`/v2/:department/:type/:host/:cid`, departments.getDepartments);
 
 /* v3.0.0 - coming soon */
-app.get(`/v3/_search/:department/:type/:host/:cid/`, departments.getDepartments);
+app.get(`/v3/_search/:department/:type/:host/:cid`, departments.getDepartments);
 
 
 /******************/

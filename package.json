@@ -15,6 +15,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "minisearch": "^3.1.0",
+    "node-csv-query": "^0.1.0",
     "nodemon": "^2.0.13",
     "papaparse": "^5.3.1",
     "request": "^2.88.2"

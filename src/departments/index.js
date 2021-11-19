@@ -36,6 +36,17 @@ exports.getDepartments = async (req, res) => {
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
-  await services.search(req, res);
+
+  let result = req.path.split('/').slice(0,2);
+  console.log('getDepartments - version -----', result[1]);
+  if (result[1] == 'v3'){
+    /* v3.0.0 - coming soon */
+    await services._search(req, res);
+  } else {
+    /* DEPRECATED */
+    await services.search(req, res);
+  }
+  
   console.log('done getDepartments ------');
+
 }
