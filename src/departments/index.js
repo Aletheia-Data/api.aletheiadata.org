@@ -31,7 +31,8 @@ exports.getDepartments = async (req, res) => {
     'senasa',
     'mirex',
     'miderec',
-    'mt'
+    'mt',
+    'ma'
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
