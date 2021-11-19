@@ -53,8 +53,8 @@ app.get('/utils/search/:type/:cid', services.search);
 const services_version = process.env.SERVICES_VERSION;
 console.log('activating services for version: ', services_version);
 
-app.get(`/${services_version}/services/transform-csv/:host/:cid`, services.getJson);
-app.get(`/${services_version}/services/search/:host/:type/:cid`, services.search);
+app.get(`/v1/services/transform-csv/:host/:cid`, services.getJson);
+app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 
 /******************/
 /******************/
@@ -64,7 +64,12 @@ app.get(`/${services_version}/services/search/:host/:type/:cid`, services.search
 const api_version = process.env.API_VERSION;
 console.log('activating endpoints for version: ', services_version);
 
-app.get(`/${api_version}/:department/:type/:host/:cid/`, departments.getDepartments);
+/* DEPRECATED */
+app.get(`/v2/:department/:type/:host/:cid/`, departments.getDepartments);
+
+/* v3.0.0 - coming soon */
+app.get(`/v3/_search/:department/:type/:host/:cid/`, departments.getDepartments);
+
 
 /******************/
 /***** LISTEN PORT ******/
