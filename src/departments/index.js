@@ -32,7 +32,11 @@ exports.getDepartments = async (req, res) => {
     'mirex',
     'miderec',
     'mt',
-    'ma'
+    'ma',
+    'mc',
+    'mj',
+    'mescyt',
+    'mepyd'
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
