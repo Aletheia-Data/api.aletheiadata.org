@@ -36,7 +36,9 @@ exports.getDepartments = async (req, res) => {
     'mc',
     'mj',
     'mescyt',
-    'mepyd'
+    'mepyd',
+    'map',
+    'mem'
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
