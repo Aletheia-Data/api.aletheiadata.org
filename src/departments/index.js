@@ -42,7 +42,8 @@ exports.getDepartments = async (req, res) => {
     'ceird',
     'conapofa',
     'dc',
-    'iad'
+    'iad',
+    'indrhi'
   ];
   if (!departments.includes(params.department)) { exit(res, 200, 'department not available.'); return; }
   console.log('getDepartments - department -----', params.department);
