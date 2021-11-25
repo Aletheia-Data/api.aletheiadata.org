@@ -3,6 +3,17 @@ const MiniSearch = require('minisearch');
 
 const utils = require('../../utils');
 
+const jsonSplitter = require('json-splitter');
+const dir = require('node-dir');
+
+const fs = require('fs');
+const path = require('path');
+const splitFile = require('split-file');
+
+const Papa = require('papaparse');
+const request = require("request");
+
+
 const queryFile = async (params, query) => {
   return new Promise(async (resolve, reject) => {
     //console.log('getting params and query: ', params, query);
@@ -15,28 +26,54 @@ const queryFile = async (params, query) => {
     // http://localhost:8000/services/transform-csv/ipfs/bafybeifds2zwfw7zn7gbh7oa2z23xyuyg6rbs6xizbsvxtg5xrfl4quo3u
     // set host on params as it's a IPFS file
     // console.log('queryFile - get params -----', params);
-    try {
-      const getJsonFromCID = await transformCSV.CSVtoJSON(params);
-      let data = getJsonFromCID.body;
-      // console.log('data: ', data);
-      if (data){
+    const cors_anywhere = 'https://cors-aletheiadata.herokuapp.com';
+    
+      let url;
+      if (params.host === 'ipfs'){
+        // if it's IFPS file
+        const file = params.cid + '.ipfs.dweb.link';  
+        url = `https://${file}`
+      } else if (params.host === 'http'){
+        // if it's IFPS file
+        url = `${cors_anywhere}/${params.cid}`
+      } else {
+        console.log('type: ', params.host);
+        return {
+          code: 400,
+          body: 'wrong type'
+        }
+      }
+
+      console.log('transforming file from url: ', url);
+      const options = {
+        header: true,
+        encoding: "latin1"
+      };
+
+      const parseStream = Papa.parse(Papa.NODE_STREAM_INPUT, options);
+      const dataStream = request
+        .get(url)
+        .pipe(parseStream);
+
+      let data = [];
+      let counter = 0;
+      parseStream.on("data", async chunk => {
+        data.push(chunk);
         // add ids
-        /* TODO: understand what to do with r.Nombre */
-        data.map((r, i) => { r.id = i; if (r.Nombre) return r; });
         // get fields
-        const fields = Object.keys(getJsonFromCID.body[0]);
-        console.log('queryFile - get header fields: ', fields);
+        const fields = Object.keys(chunk);
+        // console.log('queryFile - get header fields: ', fields);
         // if info is tru, return all the info of the doc
         var isTrueSet = (query.info === 'true');
         if (isTrueSet){
-          resolve({
+          return resolve({
             cid: params.cid,
             fileType: params.type,
             host: params.host,
             fields: fields
           });
-          return;
         }
+
         // queryFile
         miniSearch = new MiniSearch({
           fields: fields, // fields to index for full-text search
@@ -45,8 +82,23 @@ const queryFile = async (params, query) => {
             fuzzy: 3
           } 
         })
-        // Index all documents
-        await miniSearch.addAll(data);
+
+        // adding id to record
+        chunk.id = `record_${counter}`;
+        counter ++;
+
+        // adding to minisearch
+        await miniSearch.addAllAsync([chunk]);
+      });
+
+      dataStream.on("finish", (res) => {
+        console.log('done minisearch load: ', res);
+        if (data.length == 0){
+          return reject({
+            code: 400,
+            body: 'file not found'
+          })
+        }
         // Search with default options
         // Search only specific fields
         // init searchm, sorting, filtering
@@ -88,30 +140,21 @@ const queryFile = async (params, query) => {
               } else {
                 // check if limit = 'none', if so give all results
                 console.log('queryFile - CAUTION - query without limit');
-                queryResult = await miniSearch.search(query.value, { fields: query_fields });
+                queryResult = miniSearch.search(query.value, { fields: query_fields });
               }
             } else {
               console.log('queryFile - query limit by user');
-              queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, query.limit);
+              queryResult = miniSearch.search(query.value, { fields: query_fields }).slice(0, query.limit);
             }
           } else {
             // default: 25 results
             console.log('queryFile - query default limit: 25 records');
-            queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, 25);
+            queryResult = miniSearch.search(query.value, { fields: query_fields }).slice(0, 25);
           }
         }
         // return result
-        resolve(queryResult);
-        return;
-      } else {
-        reject('no data from cid ------');
-        return;
-      }
-      // make query with 
-    } catch (error) {
-      reject(error)
-      return;
-    }
+        return resolve(queryResult);
+      });
   });
 };
 
