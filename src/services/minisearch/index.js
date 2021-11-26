@@ -3,17 +3,6 @@ const MiniSearch = require('minisearch');
 
 const utils = require('../../utils');
 
-const jsonSplitter = require('json-splitter');
-const dir = require('node-dir');
-
-const fs = require('fs');
-const path = require('path');
-const splitFile = require('split-file');
-
-const Papa = require('papaparse');
-const request = require("request");
-
-
 const queryFile = async (params, query) => {
   return new Promise(async (resolve, reject) => {
     //console.log('getting params and query: ', params, query);
@@ -26,101 +15,41 @@ const queryFile = async (params, query) => {
     // http://localhost:8000/services/transform-csv/ipfs/bafybeifds2zwfw7zn7gbh7oa2z23xyuyg6rbs6xizbsvxtg5xrfl4quo3u
     // set host on params as it's a IPFS file
     // console.log('queryFile - get params -----', params);
-    const cors_anywhere = 'https://cors-aletheiadata.herokuapp.com';
-    
-      let url;
-      if (params.host === 'ipfs'){
-        // if it's IFPS file
-        const file = params.cid + '.ipfs.dweb.link';  
-        url = `https://${file}`
-      } else if (params.host === 'http'){
-        // if it's IFPS file
-        url = `${cors_anywhere}/${params.cid}`
-      } else {
-        console.log('type: ', params.host);
-        return {
-          code: 400,
-          body: 'wrong type'
-        }
-      }
-
-      console.log('transforming file from url: ', url);
-      const options = {
-        header: true,
-        encoding: "latin1"
-      };
-
-      let contentType;
-      let contentLenght;
-      const parseStream = Papa.parse(Papa.NODE_STREAM_INPUT, options);
-      const dataStream = request
-        .get(url)
-        .on('response', function(response) {
-          contentType = response.headers['content-type'];
-          contentLenght = response.headers['content-length'];
-        })
-        .pipe(parseStream);
-
-      let data = [];
-      let counter = 0;
-      let fields;
-      let miniSearch;
-      let isTrueSet = query.info === 'true';
-      parseStream.on("data", async chunk => {
-        data.push(chunk);
+    try {
+      const getJsonFromCID = await transformCSV.CSVtoJSON(params);
+      let data = getJsonFromCID.body;
+      // console.log('data: ', data);
+      if (data){
         // add ids
+        /* TODO: understand what to do with r.Nombre */
+        data.map((r, i) => { r.id = i; if (r.Nombre) return r; });
         // get fields
-        fields = Object.keys(chunk);
-        // console.log('queryFile - get header fields: ', fields);
+        const fields = Object.keys(getJsonFromCID.body[0]);
+        console.log('queryFile - get header fields: ', fields);
         // if info is tru, return all the info of the doc
+        var isTrueSet = (query.info === 'true');
         if (isTrueSet){
-          return;
-        }
-
-        // queryFile
-        if (!miniSearch){
-          console.log('creating minisearch ------ ');
-          miniSearch = new MiniSearch({
-            fields: fields, // fields to index for full-text search
-            storeFields: fields, // fields to return with search results
-            searchOptions: {
-              fuzzy: query.fuzzy ? query.fuzzy : 3
-            } 
-          })
-        }
-
-        // adding id to record
-        chunk.id = `record_${counter}`;
-        counter ++;
-
-        // adding to minisearch
-        await miniSearch.addAll([chunk]);
-        // console.log('minisearch: ', miniSearch);
-      });
-
-      dataStream.on("finish", async () => {
-
-        if (isTrueSet){
-          // if set, return file's info
-          return resolve({
+          resolve({
             cid: params.cid,
-            type: contentType,
-            length: contentLenght,
+            fileType: params.type,
             host: params.host,
             fields: fields
           });
+          return;
         }
-        
-        // if data in empty = no file
-        if (data.length == 0){
-          return reject({
-            code: 400,
-            body: 'file not found'
-          })
-        }
+        // queryFile
+        miniSearch = new MiniSearch({
+          fields: fields, // fields to index for full-text search
+          storeFields: fields, // fields to return with search results
+          searchOptions: {
+            fuzzy: 3
+          } 
+        })
+        // Index all documents
+        await miniSearch.addAll(data);
         // Search with default options
         // Search only specific fields
-        // init search, sorting, filtering
+        // init searchm, sorting, filtering
         let queryResult;
         console.log('query: ', query);
         if (!query.fields && !query.value){
@@ -142,13 +71,13 @@ const queryFile = async (params, query) => {
           const query_fields = query.fields.split(',');
           query_fields.map((qf)=>{
             // check if the field pass exists on the file
+            console.log(qf);
             if (!fields.includes(qf)){
               console.log(fields.includes(qf));
               resolve('one or more fields are not valid');
               return;
             }
           })
-          console.log('queryFile - query fields: ', query_fields);
           // get number of results
           if (query.limit){
             console.log('queryFile - query limit: ', query.limit);
@@ -162,7 +91,7 @@ const queryFile = async (params, query) => {
                 queryResult = await miniSearch.search(query.value, { fields: query_fields });
               }
             } else {
-              console.log('queryFile - query limit by user', query.limit);
+              console.log('queryFile - query limit by user');
               queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, query.limit);
             }
           } else {
@@ -172,8 +101,17 @@ const queryFile = async (params, query) => {
           }
         }
         // return result
-        return resolve(queryResult);
-      });
+        resolve(queryResult);
+        return;
+      } else {
+        reject('no data from cid ------');
+        return;
+      }
+      // make query with 
+    } catch (error) {
+      reject(error)
+      return;
+    }
   });
 };
 
