@@ -1,5 +1,6 @@
 const minisearch = require('./minisearch');
 const transformCSV = require('./transformCSV');
+const scraper = require('./scraper');
 
 /* v3.0.0 - coming soon */
 const queryCSV = require('./queryCSV');
@@ -32,6 +33,22 @@ exports.search = async (req, res) => {
   const { params, query } = req; 
   console.log('start query ------');
   await minisearch.queryFile(params, query)
+  .then((results)=>{
+    console.log('done query -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error query -------');
+    exit(res, 500, err);
+  })
+  console.log('done search ------');
+};
+
+exports.scraping = async (req, res) => {
+  console.log('starting search ------');
+  const { params, query } = req; 
+  console.log('start query ------');
+  await scraper.processUrl(params, query)
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);

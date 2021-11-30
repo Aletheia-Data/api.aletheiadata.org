@@ -16,6 +16,7 @@
     "express": "^4.17.1",
     "json-splitter": "^1.0.2",
     "minisearch": "^3.1.0",
+    "nightmare": "^3.0.2",
     "node-csv-query": "^0.1.0",
     "node-dir": "^0.1.17",
     "nodemon": "^2.0.13",
