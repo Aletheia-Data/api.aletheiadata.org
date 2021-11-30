@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
 app.get('/utils/transform-csv/:host/:cid', services.getJson);
 app.get('/utils/search/:type/:cid', services.search);
 
-app.get('/scraping/:type/:url', services.scraping);
+app.get('/scraper/:source/:type/:url', services.scraping);
 
 const services_version = process.env.SERVICES_VERSION;
 console.log('activating services for version: ', services_version);
