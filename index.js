@@ -21,56 +21,57 @@ app.get('/', (req, res) => {
     res.json('Welcome to Aletheia Data API')
 })
 
-/*
-    department: 
-    - minerd
-    - mirex
-    ...
-
-    type:
-    - admin
-    - budget
-    - hr
-
-    cid:
-    - CID number of file uploaded on IPFS
-
-    type:
-    - pdf
-    - csv
-    - docx
-*/
+/******************/
+/******************/
+/****** UTILS *****/
+/******************/
+/******************/
+app.get('/utils/transform-csv/:host/:cid', services.getJson);
+app.get('/utils/search/:type/:cid', services.search);
 
 /******************/
 /******************/
 /***** SERVICES ***/
 /******************/
 /******************/
-/* DEPRECATED: keep until fix frontend */
-app.get('/utils/transform-csv/:host/:cid', services.getJson);
-app.get('/utils/search/:type/:cid', services.search);
-
-app.get('/scraper/:source/:type/:url', services.scraping);
-
+/* V1 */
 const services_version = process.env.SERVICES_VERSION;
 console.log('activating services for version: ', services_version);
+/* Screenshots */
+app.get('/v1/services/screenshot/:format/:width/:height', services.makeScreenshot);
+/* Scraper */
+app.get('/v1/services/scraper/:source/:category/:value', services.scraping);
 
+/* Services */
 app.get(`/v1/services/transform-csv/:host/:cid`, services.getJson);
 app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 
 /******************/
 /******************/
-/***** ENDPOINTS **/
+/******* API ******/
 /******************/
 /******************/
+const api_endpoint = process.env.API_ENDPOINT;
+console.log('activating api_endpoint: ', api_endpoint);
+
 const api_version = process.env.API_VERSION;
-console.log('activating endpoints for version: ', services_version);
+console.log('activating endpoints for version: ', api_version);
 
 /* DEPRECATED */
 app.get(`/v2/:department/:type/:host/:cid`, departments.getDepartments);
 
-/* v3.0.0 - coming soon */
-app.get(`/v3/_search/:department/:type/:host/:cid`, departments.getDepartments);
+/* v1.0.0 */
+app.get(`/v1/_search/:department/:type/:host/:cid`, departments.getDepartments);
+
+
+/******************/
+/**** CAUTION *****/
+/***** IMPORT *****/
+/******************/
+/******************/
+
+/* v1.0.0 */
+app.get(`/v1/import/:source/:category/:value`, services.importUrl);
 
 
 /******************/
