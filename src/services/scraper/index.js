@@ -39,7 +39,7 @@ const processUrl = async (params, query) => {
       const config = {
         baseSiteUrl: base_url,
         startUrl: startUrl,
-        filePath: './records/',
+        filePath: './documents/',
         cloneFiles: false,
         concurrency: 10, //Maximum concurrent jobs. More than 10 is not recommended.Default is 3.
         maxRetries: 5, //The scraper will try to repeat a failed request few times(excluding 404). Default is 5.      
@@ -70,17 +70,26 @@ const processUrl = async (params, query) => {
       
       const doc_download = new CollectContent('.muted a', { name:'url_download'});
       documents.addOperation(doc_download);
+
+      // const doc_download_file = new DownloadContent('.muted a', { name:'url_download_file', contentType: 'file' });
+      // documents.addOperation(doc_download_file);
       
-      /*
       // const doc_download = new DownloadContent('.muted a', { name:'url_download', contentType: 'file' });
       // document.addOperation(doc_download);
       
-      ALTERNATIVE WAY TO DOWNLOAD FILES
-      const getPageHtml = (html, pageAddress) => {//Saving the HTML file, using the page address as a name.
-        const name = sanitize(pageAddress)
-        fs.writeFile(`./html/${name}`, html, () => { })
+      // ALTERNATIVE WAY TO DOWNLOAD FILES
+      /*
+      const condition = (cheerioNode) => {
+        // console.log('cheerioNode: ', cheerioNode);
+        // console.log(cheerioNode.attr('href'));
+        return cheerioNode;
       }
-      const doc_download_html = new OpenLinks('.muted a', { getPageHtml });
+      const doc_download_html = new DownloadContent('.muted a', { 
+        name:'url_download_file', 
+        contentType: 'file', 
+        condition 
+      });
+      documents.addOperation(doc_download_html);
       */
       
       await scraper.scrape(root);    
