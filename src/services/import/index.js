@@ -73,6 +73,7 @@ const importFromUrl = (params) => {
         const { 
           title, 
           description, 
+          startUrl,
           source, 
           original_source,
           body
@@ -105,7 +106,7 @@ const importFromUrl = (params) => {
               done
               */
               axios.post(`${api_endpoint}/imports`, {
-                "source": source,
+                "source": startUrl,
                 "type": type,
                 "wallet": owner,
                 "status": "in_progress"

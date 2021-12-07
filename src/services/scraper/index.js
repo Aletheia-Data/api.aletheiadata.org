@@ -88,6 +88,7 @@ const processUrl = async (params, query) => {
       const data = {
         title: title.getData().toString(),
         description: description.getData().toString(),
+        startUrl: startUrl,
         source: base_url,
         original_source: datasetDetails.getData()[0].toString(),
         errors_downloads: doc_download.getErrors(),
