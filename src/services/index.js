@@ -1,9 +1,9 @@
-const minisearch = require('./minisearch');
-const transformCSV = require('./transformCSV');
-const scraper = require('./scraper');
-
-/* v3.0.0 - coming soon */
-const queryCSV = require('./queryCSV');
+const _minisearch = require('./minisearch');
+const _transformCSV = require('./transformCSV');
+const _scraper = require('./scraper');
+const _screenshot = require('./screenshot');
+const _import = require('./import');
+const _queryCSV = require('./queryCSV');
 
 const exit = ((res, code, body)=>{
   return res.send({
@@ -16,7 +16,7 @@ exports.getJson = async (req, res) => {
   console.log('starting csvtojson ------');
   const { params, query } = req; 
   console.log('starting csvtojson - get json ------');
-  await transformCSV.CSVtoJSON(params, query)
+  await _transformCSV.CSVtoJSON(params, query)
   .then((results)=>{
     console.log('done csvtojson -------');
     exit(res, 200, results);
@@ -32,7 +32,24 @@ exports.search = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
-  await minisearch.queryFile(params, query)
+  await _minisearch.queryFile(params, query)
+  .then((results)=>{
+    console.log('done query -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error query -------');
+    exit(res, 500, err);
+  })
+  console.log('done search ------');
+};
+
+/* v1.0.0 */
+exports._search = async (req, res) => {
+  console.log('starting search ------');
+  const { params, query } = req; 
+  console.log('start query ------');
+  await _queryCSV.queryFile(params, query)
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);
@@ -48,7 +65,7 @@ exports.scraping = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
-  await scraper.processUrl(params, query)
+  await _scraper.processUrl(params, query)
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);
@@ -60,13 +77,27 @@ exports.scraping = async (req, res) => {
   console.log('done search ------');
 };
 
-
-/* v3.0.0 - coming soon */
-exports._search = async (req, res) => {
+exports.makeScreenshot = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
-  await queryCSV.queryFile(params, query)
+  await _screenshot.makeScreenshot(params, query)
+  .then((results)=>{
+    console.log('done query -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error query -------');
+    exit(res, 500, err);
+  })
+  console.log('done search ------');
+};
+
+exports.importUrl = async (req, res) => {
+  console.log('starting search ------');
+  const { params, query } = req; 
+  console.log('start query ------');
+  await _import.importFromUrl(params, query)
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);

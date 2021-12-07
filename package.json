@@ -12,17 +12,24 @@
     "apicache": "^1.6.3",
     "axios": "^0.21.4",
     "cheerio": "^1.0.0-rc.10",
+    "compress-images": "^2.0.4",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "gifsicle": "^5.2.1",
     "json-splitter": "^1.0.2",
     "minisearch": "^3.1.0",
     "nightmare": "^3.0.2",
     "node-csv-query": "^0.1.0",
     "node-dir": "^0.1.17",
+    "node-server-screenshot": "^0.2.4",
+    "nodejs-file-downloader": "^4.7.4",
     "nodejs-web-scraper": "^6.0.2",
     "nodemon": "^2.0.13",
     "papaparse": "^5.3.1",
+    "pngquant-bin": "^6.0.1",
     "request": "^2.88.2",
-    "split-file": "^2.3.0"
+    "split-file": "^2.3.0",
+    "uuid": "^8.3.2",
+    "wait-loop": "^1.0.0"
   }
 }
