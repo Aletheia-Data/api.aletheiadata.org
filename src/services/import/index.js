@@ -12,6 +12,7 @@ const _scraper = require('../../services/scraper');
 const _screenshot = require('../../services/screenshot');
 
 var mime = require('mime-types');
+var https = require('https');
 
 const importFromUrl = (params) => {
 
@@ -71,7 +72,7 @@ const importFromUrl = (params) => {
 
         resolve('clean up done!');
       } catch (error) {
-        console.log('upload failed: ', error);
+        console.log('clean up failed: ', error);
         response_exit.errors.push(error);
         reject(error)
       }
@@ -150,9 +151,17 @@ const importFromUrl = (params) => {
 
         const response_exit = {
           errors: [],
+          imports: [],
+          docs_imported: [],
+          screen_imported: [],
+          total_docs_imported: 0,
+          total_screen_imported: 0,
+          total_docs_errors: [],
+          total_screen_errors: [],
           title, 
           description, 
           source, 
+          startUrl,
           original_source,
           records: 0,
           documents: 0
@@ -182,19 +191,21 @@ const importFromUrl = (params) => {
                 resolve(response.data);
               })
               .catch(error => {
-                console.log('upload failed: ', error);
+                console.log('import failed: ', error);
                 reject(error)
               })
       
             } catch (error) {
-              console.log('upload doc failed: ', error);
+              console.log('import doc failed: ', error);
               reject(error)
             }
       
           })
         }); 
       
-        const doneImport = ((id, documents)=>{
+        // (importItem.id, response_exit.documents, response_exit.total_docs_errors, response_exit.errors);
+
+        const doneImport = ((id, documents, total_docs_errors, docs_imported)=>{
           return new Promise((resolve, reject) => {
             // save document
             try {
@@ -205,6 +216,9 @@ const importFromUrl = (params) => {
               */
               axios.put(`${api_endpoint}/imports/${id}`, {
                 "status": "done",
+                "download_errors": total_docs_errors,
+                "download_errors_count": total_docs_errors.length,
+                "docs_imported": docs_imported,
                 "documents": documents,
               })
               .then(function (response) {
@@ -213,12 +227,12 @@ const importFromUrl = (params) => {
                 resolve(response);
               })
               .catch(error => {
-                console.log('upload failed: ', error);
+                console.log('import done failed: ', error);
                 reject(error)
               })
       
             } catch (error) {
-              console.log('upload doc failed: ', error);
+              console.log('import done failed: ', error);
               reject(error)
             }
       
@@ -437,7 +451,7 @@ const importFromUrl = (params) => {
             ****************************************
             *********** IMPORTING RECORD ***********
             ** TITLE: ${record_title} **************
-            ** RECORDS: ${records_count + 1} / ${records.data.length} **************
+            ** RECORD: ${records_count + 1} / ${records.data.length} **************
             ****************************************
             ****************************************
             `
@@ -453,7 +467,7 @@ const importFromUrl = (params) => {
                 ****************************************
                 ****************************************
                 ************* SAVING DOCS **************
-                ** RECORDS: ${record_documents.length} **
+                ** RECORD: ${record_documents.length} **
                 ****************************************
                 ****************************************
                 `
@@ -467,7 +481,7 @@ const importFromUrl = (params) => {
                   ****************************************
                   ****************************************
                   ************* SAVING DOC **************
-                  ** RECORDS: ${docs_count + 1} / ${record_documents.length} **
+                  ** RECORD: ${docs_count + 1} / ${record_documents.length} **
                   ****************************************
                   ****************************************
                   `
@@ -493,14 +507,20 @@ const importFromUrl = (params) => {
                         resolve(response);
                       })
                       .catch(error => {
-                        console.log('upload failed: ', error);
-                        response_exit.errors.push(error);
+                        console.log('getting failed --------');
+                        response_exit.errors.push({
+                          url: document_url,
+                          reason: error
+                        });
                         reject(error)
                       })
               
                     } catch (error) {
-                      console.log('upload doc failed: ', error);
-                      response_exit.errors.push(error);
+                      console.log('getting failed: ');
+                      response_exit.errors.push({
+                        url: document_url,
+                        reason: error
+                      });
                       reject(error)
                     }
               
@@ -534,25 +554,33 @@ const importFromUrl = (params) => {
                         resolve(item_id);
                       })
                       .catch(error => {
-                        console.log('upload failed: ', error);
-                        response_exit.errors.push(error);
+                        console.log('aletheia failed: ', error);
+                        response_exit.errors.push({
+                          url: doc_source,
+                          reason: error
+                        });
                         reject(error)
                       })
     
                     } catch (error) {
-                      console.log('upload doc failed: ', error);
+                      console.log('aletheia failed: ', error);
                       response_exit.errors.push(error);
+                      response_exit.errors.push({
+                        url: doc_source,
+                        reason: error
+                      });
                       reject(error)
                     }
     
                   })
                 }); 
   
-                const saveCID = ((id, cid, type)=>{
+                const saveCID = ((id, cid, type, ext)=>{
                   return new Promise((resolve, reject) => {
 
                     let data =  {
-                      "type": type
+                      "type": type,
+                      "ext": ext
                     };
 
                     if (cid) { data.cid = cid };
@@ -569,14 +597,20 @@ const importFromUrl = (params) => {
                         resolve(item_id);
                       })
                       .catch(error => {
-                        console.log('upload failed: ', error);
-                        response_exit.errors.push(error);
+                        console.log('aletheia failed ---------');
+                        response_exit.errors.push({
+                          cid: cid,
+                          reason: error
+                        });
                         reject(error)
                       })
     
                     } catch (error) {
-                      console.log('upload doc failed: ', error);
-                      response_exit.errors.push(error);
+                      console.log('aletheia failed ------');
+                      response_exit.errors.push({
+                        cid: cid,
+                        reason: error
+                      });
                       reject(error)
                     }
     
@@ -597,8 +631,13 @@ const importFromUrl = (params) => {
                       form.append('ref', 'alexandria');
                       form.append('refId', item);
                       form.append('field', field);
+
+                      console.log('uploading file with id: ', item);
+                      console.log('uploading file with field: ', field);
                       
                       axios.post(`${api_endpoint}/upload`, form, {
+                        maxContentLength: 100000000,
+                        maxBodyLength: 100000000,
                         headers: {
                           ...form.getHeaders(),
                         }
@@ -609,14 +648,20 @@ const importFromUrl = (params) => {
                         resolve(cid);
                       })
                       .catch(error => {
-                        console.log('upload failed: ', error);
-                        response_exit.errors.push(error);
+                        console.log('upload failed --------');
+                        response_exit.errors.push({
+                          itemId: item,
+                          reason: error
+                        });
                         reject(error)
                       })
     
                     } catch (error) {
                       console.log('upload failed: ', error);
-                      response_exit.errors.push(error);
+                      response_exit.errors.push({
+                        itemId: item,
+                        reason: error
+                      });
                       reject(error)
                     }
                   })
@@ -641,8 +686,11 @@ const importFromUrl = (params) => {
                         resolve(res);
                       })
                     } catch (error) {
-                      console.log('upload screen failed: ', error);
-                      response_exit.errors.push(error);
+                      console.log('screen failed: ', error);
+                      response_exit.errors.push({
+                        source: source,
+                        reason: error
+                      });
                       reject(error)
                     }
                   })
@@ -653,17 +701,44 @@ const importFromUrl = (params) => {
                   return new Promise((resolve, reject) => {
                     try {
                       console.log('downloading file: ', fileName, ' - ', url);
-                      utils.downloadFile(fileName, url, './documents').then(async res => {
+                      axios.get(`${url}`, { responseType: 'stream' })
+                      .then(function (response) {
+                        console.log('file downloaded: ', fileName);
+                        try {
+                          response.data.pipe(fs.createWriteStream(`./documents/${fileName}`));
+                          resolve(`${url}`);
+                        } catch (error) {
+                          console.log('downloading failed: ', error);
+                          response_exit.errors.push(error);
+                          resolve(error);
+                        }
+                      })
+                      .catch(error => {
+                        console.log('downloading failed: ', error);
+                        response_exit.errors.push({
+                          url: url,
+                          reason: error
+                        });
+                        reject(error)
+                      })
+                      
+                      /*
+                      utils.downloadFile(fileName, url, './documents')
+                      .then(async res => {
                         resolve(`${url}`);
                       })
                       .catch(error => {
-                        console.log('upload failed: ', error);
+                        console.log('downloading failed: ', error);
                         response_exit.errors.push(error);
                         reject(error)  
                       })
+                      */
                     } catch (error) {
-                      console.log('upload failed: ', error);
-                      response_exit.errors.push(error);
+                      console.log('downloading failed: ', error);
+                      response_exit.errors.push({
+                        url: url,
+                        reason: error
+                      });
                       reject(error)
                     }
                   })
@@ -676,10 +751,23 @@ const importFromUrl = (params) => {
                 try {
                   const saveScreenshot = await saveScreen(doc_source);
                   // upload screenshot
-                  await uploadFile(`./screenshot/${saveScreenshot}`, itemId, 'proof');
+                  const cid = await uploadFile(`./screenshot/${saveScreenshot}`, itemId, 'proof');
+                  const metadata = {
+                    item: itemId,
+                    file: saveScreenshot,
+                    cid: cid
+                  };
+                  response_exit.imports.push(metadata);
+                  response_exit.screen_imported.push(metadata);
+                  response_exit.total_screen_imported ++;
+
                 } catch (error) {
                   console.log('error saving screenshot: ', error);
-                  response_exit.errors.push(error);
+                  response_exit.total_screen_errors.push(itemId);
+                  response_exit.errors.push({
+                    itemId: itemId,
+                    reason: error
+                  });
                 }
 
                 try {
@@ -688,8 +776,20 @@ const importFromUrl = (params) => {
                   // docType
                   let res_type = doc_name['headers']['content-type'];
                   console.log('check file content-type: ', res_type);
+
+                  var re = /(?:\.([^.]+))?$/;
+                  let url = new URL(document_url);
+                  let cleanUrl = new URLSearchParams(url.search); 
+                  var ext = re.exec(cleanUrl)[1];
+                  console.log('check file extention: ', ext);
+
+                  let mimeType = mime.extension(res_type);
+                  console.log('check file extention w/mimeType: ', mimeType);
+
+                  // check ext by headers
                   switch (res_type) {
                     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    case 'application/vnd.ms-excel':
                       res_type = 'xlsx'
                       break;
                     case 'application/pdf':
@@ -697,44 +797,79 @@ const importFromUrl = (params) => {
                       break;
                     case 'text/csv':
                     case 'text/x-comma-separated-values;charset=UTF-8':
+                    case 'text/csv; charset=Windows-1252':
+                    case 'text/x-comma-separated-values;charset=UTF-8':
+                    case 'application/csv':
                     case 'application/octet-stream':
+                    case 'text/csv; charset=utf-8':
                       res_type = 'csv'
                       break;
+                    case 'text/plain;charset=UTF-8':
+                      res_type = 'txt'
+                      break;
+                    case 'text/html;charset=UTF-8':
+                    case 'text/html; charset=utf-8':
+                      res_type = 'txt'
+                      break;
                     case 'application/vnd.oasis.opendocument.spreadsheet':
+                    case 'application/oleobject':
+                    case 'application/ods':
+                    case 'text/ods; charset=utf-8':
                       res_type = 'ods'
                       break;
                     case 'application/json; charset=utf-8':
+                    case 'application/json;charset=utf-8':
+                    case 'application/json':
+                    case 'text/json; charset=utf-8':
                       res_type = 'json'
                       break;
                     default:
-                      res_type = 'other'
+                      if (ext){
+                        // if file has extention, keep it
+                        res_type = ext;
+                      } else {
+                        res_type = mimeType;
+                      }
                       break;
                   }
 
-                  let nameFile = `${itemId}`;
-                  if (res_type !== 'other'){
-                    nameFile = `${itemId}.${res_type}`;
-                  }
+                  nameFile = `${itemId}.${res_type}`;
 
                   // save doc's file
                   let cidFile;
                   console.log(`saving doc file for item ${itemId} - ${nameFile}`);
-                  await saveFile(nameFile, document_url);
+                  const file = await saveFile(nameFile, document_url);
+                  console.log('document downloaded: ', file);
                   cidFile = await uploadFile(`./documents/${nameFile}`, itemId, 'file');
-
                   // group 'other' type 
                   if (
-                    res_type === 'ods' ||
-                    res_type === 'json'
+                    res_type !== 'pdf' &&
+                    res_type !== 'csv' &&
+                    res_type !== 'xls' &&
+                    res_type !== 'xlsx' &&
+                    res_type !== 'ods'
                   ) {
                     res_type = 'other'
                   }
                   // saving CID
-                  await saveCID(itemId, cidFile, res_type);
+                  await saveCID(itemId, cidFile, res_type, mimeType ? mimeType : res_type);
+                  // add to response
+                  const metadata = {
+                    item: itemId,
+                    file: nameFile,
+                    cid: cidFile
+                  };
+                  response_exit.imports.push(metadata);
+                  response_exit.docs_imported.push(metadata);
+                  response_exit.total_docs_imported ++;
 
                 } catch (error) {
-                  console.log('saving file failed: ', error);
-                  response_exit.errors.push(error);
+                  response_exit.total_docs_errors.push(document_url);
+                  console.log('saving file failed ------');
+                  response_exit.errors.push({
+                    url: document_url,
+                    reason: error
+                  });
                 }
                 
                 if (docs_count === record_documents.length-1){
@@ -783,7 +918,7 @@ const importFromUrl = (params) => {
               `
             );
 
-            await doneImport(importItem.id, response_exit.documents);
+            await doneImport(importItem.id, response_exit.documents, response_exit.total_docs_errors, response_exit.docs_imported);
             response_exit.importID = importItem.id;
 
             console.log(
@@ -792,16 +927,13 @@ const importFromUrl = (params) => {
               ****************************************
               ******** DONE IMPORTING RECORD *********
               ** ID: ${importItem.id} ****************
-              ** DOCS: ${records_count} ****
+              ** RECORDS: ${records_count+1} ****
               ****************************************
               ****************************************
               `
             );
 
             resolve(response_exit);
-
-            // cleanup server
-            cleanUp();
 
             return;
           } else {
@@ -812,7 +944,7 @@ const importFromUrl = (params) => {
               ****************************************
               *********** DONE IMPORTING DOCUMENT ****
               *********** NEXT RECORDS ***************
-              ** RECORDS: ${ records_count +1 } / ${records.data.length} **************
+              ** RECORD: ${ records_count +1 } / ${records.data.length} **************
               ****************************************
               `
             );
