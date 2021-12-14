@@ -798,7 +798,6 @@ const importFromUrl = (params) => {
                     case 'text/csv':
                     case 'text/x-comma-separated-values;charset=UTF-8':
                     case 'text/csv; charset=Windows-1252':
-                    case 'text/x-comma-separated-values;charset=UTF-8':
                     case 'application/csv':
                     case 'application/octet-stream':
                     case 'text/csv; charset=utf-8':

@@ -8,5 +8,7 @@ jspm_packages
 
 serverless.env.yml
 
+documents/*
+screenshot/*
 
 .env
