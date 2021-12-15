@@ -619,51 +619,40 @@ const importFromUrl = (params) => {
   
                 // uploading files to admin dashboard 
                 const uploadFile = ((file, item, field)=>{
-                  console.log(`uploading file to ${field}: `, item);
-                  return new Promise((resolve, reject) => {
+                  console.log(`uploading file to ${field}: `, file, item, field);
+                  return new Promise(async (resolve, reject) => {
                     // uploading file
-                    try {
-  
-                      const fileUpload = fs.createReadStream(file);
-                      const form = new FormData();
-                      // screenForm.append('files', file, `${item}.png`);
-                      form.append('files', fileUpload);
-                      form.append('ref', 'alexandria');
-                      form.append('refId', item);
-                      form.append('field', field);
+                    const form = new FormData();
+                    form.append('files', fs.createReadStream(file));
 
-                      console.log('uploading file with id: ', item);
-                      console.log('uploading file with field: ', field);
-                      
-                      axios.post(`${api_endpoint}/upload`, form, {
-                        maxContentLength: 100000000,
-                        maxBodyLength: 100000000,
-                        headers: {
-                          ...form.getHeaders(),
-                        }
-                      }).then(r => {
-                        var pathArray = r.data[0].url.split( '/' );
-                        var host = pathArray[2];
-                        var cid = host.split( '.' )[0];
-                        resolve(cid);
-                      })
-                      .catch(error => {
-                        console.log('upload failed --------');
-                        response_exit.errors.push({
-                          itemId: item,
-                          reason: error
-                        });
-                        reject(error)
-                      })
-    
-                    } catch (error) {
-                      console.log('upload failed: ', error);
+                    form.append('ref', 'alexandria');
+                    form.append('refId', item);
+                    form.append('field', field);
+
+                    console.log('uploading file with id: ', item);
+                    // console.log('uploading file with field: ', field);
+                    // console.log('uploading file form: ', form);
+                    // console.log('headers: ', form.getHeaders());
+                    
+                    await axios.post(`${api_endpoint}/upload`, form, {
+                      headers: {
+                        ...form.getHeaders(),
+                      }
+                    }).then(r => {
+                      console.log('uploaded file: ', r);
+                      var pathArray = r.data[0].url.split( '/' );
+                      var host = pathArray[2];
+                      var cid = host.split( '.' )[0];
+                      resolve(cid);
+                    })
+                    .catch(error => {
+                      console.log('upload failed --------', JSON.stringify(error));
                       response_exit.errors.push({
                         itemId: item,
                         reason: error
                       });
                       reject(error)
-                    }
+                    })
                   })
                 }); 
   
@@ -749,17 +738,20 @@ const importFromUrl = (params) => {
 
                 // save doc's screenshot
                 try {
-                  const saveScreenshot = await saveScreen(doc_source);
-                  // upload screenshot
-                  const cid = await uploadFile(`./screenshot/${saveScreenshot}`, itemId, 'proof');
-                  const metadata = {
-                    item: itemId,
-                    file: saveScreenshot,
-                    cid: cid
-                  };
-                  response_exit.imports.push(metadata);
-                  response_exit.screen_imported.push(metadata);
-                  response_exit.total_screen_imported ++;
+                  await saveScreen(doc_source)
+                  .then( async saveScreenshot => {
+                    // upload screenshot
+                    const cid = await uploadFile(`./screenshot/${saveScreenshot}`, itemId, 'proof');
+                    console.log('saved proof with cid: ', cid);
+                    const metadata = {
+                      item: itemId,
+                      file: saveScreenshot,
+                      cid: cid
+                    };
+                    response_exit.imports.push(metadata);
+                    response_exit.screen_imported.push(metadata);
+                    response_exit.total_screen_imported ++;
+                  });
 
                 } catch (error) {
                   console.log('error saving screenshot: ', error);
@@ -772,19 +764,15 @@ const importFromUrl = (params) => {
 
                 try {
                   const doc_name = await getName(document_url);
-                  console.log('getting document headers: ', doc_name['headers']);
                   // docType
                   let res_type = doc_name['headers']['content-type'];
-                  console.log('check file content-type: ', res_type);
-
+                  
                   var re = /(?:\.([^.]+))?$/;
                   let url = new URL(document_url);
                   let cleanUrl = new URLSearchParams(url.search); 
                   var ext = re.exec(cleanUrl)[1];
-                  console.log('check file extention: ', ext);
-
+                  
                   let mimeType = mime.extension(res_type);
-                  console.log('check file extention w/mimeType: ', mimeType);
 
                   // check ext by headers
                   switch (res_type) {
@@ -832,39 +820,43 @@ const importFromUrl = (params) => {
                       break;
                   }
 
+                  console.log('applying etx: ', res_type);
                   nameFile = `${itemId}.${res_type}`;
+                  console.log('name file: ', nameFile);
 
                   // save doc's file
                   let cidFile;
                   console.log(`saving doc file for item ${itemId} - ${nameFile}`);
-                  const file = await saveFile(nameFile, document_url);
-                  console.log('document downloaded: ', file);
-                  cidFile = await uploadFile(`./documents/${nameFile}`, itemId, 'file');
-                  // group 'other' type 
-                  if (
-                    res_type !== 'pdf' &&
-                    res_type !== 'csv' &&
-                    res_type !== 'xls' &&
-                    res_type !== 'xlsx' &&
-                    res_type !== 'ods'
-                  ) {
-                    res_type = 'other'
-                  }
-                  // saving CID
-                  await saveCID(itemId, cidFile, res_type, mimeType ? mimeType : res_type);
-                  // add to response
-                  const metadata = {
-                    item: itemId,
-                    file: nameFile,
-                    cid: cidFile
-                  };
-                  response_exit.imports.push(metadata);
-                  response_exit.docs_imported.push(metadata);
-                  response_exit.total_docs_imported ++;
+                  await saveFile(nameFile, document_url)
+                  .then(async file => {
+                    console.log('document downloaded: ', file);
+                    cidFile = await uploadFile(`./documents/${nameFile}`, itemId, 'file');
+                    // group 'other' type 
+                    if (
+                      res_type !== 'pdf' &&
+                      res_type !== 'csv' &&
+                      res_type !== 'xls' &&
+                      res_type !== 'xlsx' &&
+                      res_type !== 'ods'
+                    ) {
+                      res_type = 'other'
+                    }
+                    // saving CID
+                    await saveCID(itemId, cidFile, res_type, mimeType ? mimeType : res_type);
+                    // add to response
+                    const metadata = {
+                      item: itemId,
+                      file: nameFile,
+                      cid: cidFile
+                    };
+                    response_exit.imports.push(metadata);
+                    response_exit.docs_imported.push(metadata);
+                    response_exit.total_docs_imported ++;
+                  })
 
                 } catch (error) {
                   response_exit.total_docs_errors.push(document_url);
-                  console.log('saving file failed ------');
+                  console.log('saving file failed ------', error);
                   response_exit.errors.push({
                     url: document_url,
                     reason: error
@@ -913,6 +905,7 @@ const importFromUrl = (params) => {
               ****************************************
               ******** DONE IMPORTING DOCUMENTS ******
               ** DOCS: ${response_exit.documents} ****
+              ** ERRORS: ${response_exit.total_docs_errors.length} ****
               ****************************************
               `
             );
