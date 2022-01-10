@@ -71,7 +71,8 @@ app.get(`/v1/_search/:department/:type/:host/:cid`, departments.getDepartments);
 /******************/
 
 /* v1.0.0 */
-app.get(`/v1/import/:source/:category/:value`, services.importUrl);
+app.get(`/v1/import/:baseUrl/:startUrl`, services.importUrl);
+app.get(`/v1/_import/:source/:operation`, services._import);
 
 
 /******************/

@@ -10,5 +10,6 @@ serverless.env.yml
 
 documents/*
 screenshot/*
+compress/*
 
 .env

@@ -1,6 +1,7 @@
 const { Scraper, Root, DownloadContent, OpenLinks, CollectContent } = require('nodejs-web-scraper');
 const axios = require('axios');
 const FormData = require('form-data');
+const qs = require('qs');
 
 const sanitize = require('sanitize-filename');//Using this npm module to sanitize file names.
 const fs = require('fs');
@@ -110,9 +111,8 @@ const importFromUrl = (params) => {
 
   return new Promise((resolve, reject) => {
     //console.log('getting params and query: ', params, query);
-    if (!params.category) { reject('missing category'); return;}
-    if (!params.value) { reject('missing value'); return;}
-    if (!params.source) { reject('missing source'); return;}
+    if (!params.baseUrl) { reject('missing base url'); return;}
+    if (!params.startUrl) { reject('missing start url'); return;}
 
     try {
       
@@ -120,9 +120,8 @@ const importFromUrl = (params) => {
         `
         ****************************************
         *********** START SCRAPPER *************
-        ** CATEGORY: ${params.category} ********
-        ** SOURCE: ${params.source} ************
-        ** VALUE: ${params.value} **************
+        ** BASE URL: ${params.baseUrl} ********
+        ** START URL: ${params.startUrl} ************
         ****************************************
         `
       );
@@ -1043,6 +1042,170 @@ const importFromUrl = (params) => {
   });
 };
 
+const importAll = (params) => {
+  
+  const owner = process.env.WALLET_OWNER;
+  const api_endpoint = process.env.API_ENDPOINT;
+
+  console.log(
+    `
+    ****************************************
+    ** ENDPOINT: ${api_endpoint} ***********
+    ** OWNER: ${owner} *********************
+    ****************************************
+    `
+  );
+
+  return new Promise(async (resolve, reject) => {
+    //console.log('getting params and query: ', params, query);
+    if (!params.operation) { reject('missing operation'); return;}
+    if (!params.source) { reject('missing source'); return;}
+
+    let valid = utils.validSource(params.source);
+    if (!valid){
+      reject('source not available yet');
+    } else {
+      // get all links
+      // check source
+      const getAllSource = (async source =>{
+        console.log('getting links for: ', source);
+        let source_search;
+        switch (source) {
+          case 'datos-abiertos':
+            source_search = 'datos.gob.do';
+            break;
+          default:
+            source_search = 'no-source';
+            break;
+        }
+
+        const query = qs.stringify({
+          _where: [{ source_contains: source_search }],
+          _start: 0,
+          _limit: 0
+        });
+
+        return await axios.get(`${api_endpoint}/imports?${query}`)
+          .then(function (links) {
+            return links;
+          })
+          .catch(function (error) {
+            return error;
+          });
+      });
+      
+      let linksData;
+      switch (params.operation) {
+        case 'all':
+          linksData = await getAllSource(params.source);
+          break;
+        default:
+          reject({
+            source: params.source,
+            action: 'getOperation',
+            reason: 'operation not valid'
+          });
+          return;
+      }
+
+      if (
+        !linksData.data || 
+        linksData.data.length === 0
+      ){
+        reject({
+          source: params.source,
+          action: 'getAllSource',
+          reason: 'import not found'
+        });
+        return;
+      }
+
+      const linksUrl = linksData.data;
+      
+      const links = linksUrl.filter((v,i,a)=>a.findIndex(t=>(t.source===v.source))===i);
+      // links.splice(0, 199);
+      const links_length = links.length;
+
+      let response = [];
+      let response_errors = [];
+      for (let index = 0; index < links_length; index++) {
+        
+        const link = links[index];
+        // loop and call importFromUrl();
+        let paramsLink = {
+          baseUrl: `https://datos.gob.do`,
+          startUrl: `${link.source}`
+        }
+
+        console.log(
+          `
+          ****************************************
+          ****************************************
+          *********** START RE-IMPORTING **********
+          ** BASE: ${ paramsLink.baseUrl } ********
+          ** START: ${ paramsLink.startUrl } ******
+          *********** RECORD: ${link.id} ********
+          ** RECORD: ${ index +1 } / ${links_length} **************
+          ****************************************
+          `
+        );
+
+        
+        await importFromUrl(paramsLink)
+        .then(imported => {
+          response.push(imported);
+        })
+        .catch(error => {
+          response_errors.push(error);
+        })
+        
+        if (index === links_length-1){
+          
+          console.log(
+            `
+            ****************************************
+            ****************************************
+            *********** DONE RE-IMPORTING ****
+            ************* RECORDS ******************
+            ** RECORDS: ${ index +1 } / ${links_length} **************
+            ****************************************
+            `
+          );
+
+          let res = {
+            response,
+            records: links_length,
+            source: params.source,
+            operation: params.operation,
+            response_errors
+          }
+
+          resolve(res); 
+          return;
+        }
+
+        console.log(
+          `
+          ****************************************
+          ****************************************
+          *********** DONE RE-IMPORTING **********
+          *********** RECORDS: ${link.id} ********
+          *********** NEXT RECORDS ***************
+          ** RECORD: ${ index +1 } / ${links_length} **************
+          ****************************************
+          `
+        );
+
+      }
+      
+    }
+
+  })
+
+
+}
+
 module.exports = {
-    importFromUrl
+    importFromUrl,
+    importAll
 }

@@ -34,3 +34,13 @@ exports.downloadFile = (fileName, fileUrl, outputLocationPath) =>{
       
     });
 }
+
+exports.validSource = (source) => {
+  const valid_source = [
+    'datos-abiertos'
+  ];
+  
+  if (!valid_source.includes(source)) { return false }
+
+  return true;
+}
