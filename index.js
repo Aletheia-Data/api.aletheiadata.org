@@ -3,6 +3,9 @@ const express = require('express')
 const apicache = require('apicache')
 const app = express();
 let cache = apicache.middleware;
+
+const { version } = require('./package.json');
+
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -37,8 +40,10 @@ app.get('/utils/search/:type/:cid', services.search);
 /* V1 */
 const services_version = process.env.SERVICES_VERSION;
 console.log('activating services for version: ', services_version);
+
 /* Screenshots */
 app.get('/v1/services/screenshot/:format/:width/:height', services.makeScreenshot);
+
 /* Scraper */
 app.get('/v1/services/scraper/:source/:category/:value', services.scraping);
 
@@ -48,13 +53,13 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 
 /******************/
 /******************/
-/******* API ******/
+/******* SEARCH ******/
 /******************/
 /******************/
 const api_endpoint = process.env.API_ENDPOINT;
 console.log('activating api_endpoint: ', api_endpoint);
 
-const api_version = process.env.API_VERSION;
+const api_version = version;
 console.log('activating endpoints for version: ', api_version);
 
 /* DEPRECATED */
@@ -62,6 +67,8 @@ app.get(`/v2/:department/:type/:host/:cid`, departments.getDepartments);
 
 /* v1.0.0 */
 app.get(`/v1/_search/:department/:type/:host/:cid`, departments.getDepartments);
+/* v1.1.0 */
+app.get(`/v1/_search/:host/:format/:cid`, services._search);
 
 
 /******************/
