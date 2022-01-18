@@ -1,6 +1,7 @@
 const { Scraper, Root, DownloadContent, OpenLinks, CollectContent } = require('nodejs-web-scraper');
 const axios = require('axios');
 const FormData = require('form-data');
+const qs = require('qs');
 
 const sanitize = require('sanitize-filename');//Using this npm module to sanitize file names.
 const fs = require('fs');
@@ -73,7 +74,11 @@ const importFromUrl = (params) => {
         resolve('clean up done!');
       } catch (error) {
         console.log('clean up failed: ', error);
-        response_exit.errors.push(error);
+        let exit = {
+          action: 'cleanUp',
+          reason: error
+        }
+        response_exit.errors.push(exit);
         reject(error)
       }
     })
@@ -106,9 +111,8 @@ const importFromUrl = (params) => {
 
   return new Promise((resolve, reject) => {
     //console.log('getting params and query: ', params, query);
-    if (!params.category) { reject('missing category'); return;}
-    if (!params.value) { reject('missing value'); return;}
-    if (!params.source) { reject('missing source'); return;}
+    if (!params.baseUrl) { reject('missing base url'); return;}
+    if (!params.startUrl) { reject('missing start url'); return;}
 
     try {
       
@@ -116,9 +120,8 @@ const importFromUrl = (params) => {
         `
         ****************************************
         *********** START SCRAPPER *************
-        ** CATEGORY: ${params.category} ********
-        ** SOURCE: ${params.source} ************
-        ** VALUE: ${params.value} **************
+        ** BASE URL: ${params.baseUrl} ********
+        ** START URL: ${params.startUrl} ************
         ****************************************
         `
       );
@@ -473,6 +476,16 @@ const importFromUrl = (params) => {
                 `
               );
 
+              if (record_documents.length === 0){
+                let exit = {
+                  action: 'saveFiles',
+                  title: record_title,
+                  reason: `records missing: ${record_documents.length}`
+                }
+                response_exit.errors.push(exit);
+                resolve(`records missing: ${record_documents.length}`)
+              }
+
               let docs_count = 0;
               for (let document of record_documents) {
 
@@ -508,19 +521,23 @@ const importFromUrl = (params) => {
                       })
                       .catch(error => {
                         console.log('getting failed --------');
-                        response_exit.errors.push({
-                          url: document_url,
+                        let exit = {
+                          action: 'gettingName',
+                          source: source,
                           reason: error
-                        });
+                        }
+                        response_exit.errors.push(exit);
                         reject(error)
                       })
               
                     } catch (error) {
                       console.log('getting failed: ');
-                      response_exit.errors.push({
-                        url: document_url,
+                      let exit = {
+                        action: 'getName',
+                        source: source,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
                     }
               
@@ -534,7 +551,7 @@ const importFromUrl = (params) => {
                       console.log('saving document: ', doc_source);
                       axios.post(`${api_endpoint}/alexandrias`, {
                         "title": single_record.record_title,
-                        "description": single_record.record_description,
+                        "description": single_record.record_description ? single_record.record_description : 'none',
                         "source_url": doc_source,
                         "original_url": document_url,
                         "source": sourceId,
@@ -555,20 +572,23 @@ const importFromUrl = (params) => {
                       })
                       .catch(error => {
                         console.log('aletheia failed: ', error);
-                        response_exit.errors.push({
-                          url: doc_source,
+                        let exit = {
+                          action: 'savingDoc',
+                          source: doc_source,
                           reason: error
-                        });
+                        }
+                        response_exit.errors.push(exit);
                         reject(error)
                       })
     
                     } catch (error) {
                       console.log('aletheia failed: ', error);
-                      response_exit.errors.push(error);
-                      response_exit.errors.push({
-                        url: doc_source,
+                      let exit = {
+                        action: 'saveDoc',
+                        source: doc_source,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
                     }
     
@@ -598,19 +618,23 @@ const importFromUrl = (params) => {
                       })
                       .catch(error => {
                         console.log('aletheia failed ---------');
-                        response_exit.errors.push({
+                        let exit = {
+                          action: 'savingCid',
                           cid: cid,
                           reason: error
-                        });
+                        }
+                        response_exit.errors.push(exit);
                         reject(error)
                       })
     
                     } catch (error) {
                       console.log('aletheia failed ------');
-                      response_exit.errors.push({
+                      let exit = {
+                        action: 'saveCID',
                         cid: cid,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
                     }
     
@@ -619,51 +643,47 @@ const importFromUrl = (params) => {
   
                 // uploading files to admin dashboard 
                 const uploadFile = ((file, item, field)=>{
-                  console.log(`uploading file to ${field}: `, item);
-                  return new Promise((resolve, reject) => {
+                  console.log(`uploading file to ${field}: `, file, item, field);
+                  return new Promise(async (resolve, reject) => {
                     // uploading file
-                    try {
-  
-                      const fileUpload = fs.createReadStream(file);
-                      const form = new FormData();
-                      // screenForm.append('files', file, `${item}.png`);
-                      form.append('files', fileUpload);
-                      form.append('ref', 'alexandria');
-                      form.append('refId', item);
-                      form.append('field', field);
+                    const form = new FormData();
+                    form.append('files', fs.createReadStream(file));
 
-                      console.log('uploading file with id: ', item);
-                      console.log('uploading file with field: ', field);
-                      
-                      axios.post(`${api_endpoint}/upload`, form, {
-                        maxContentLength: 100000000,
-                        maxBodyLength: 100000000,
-                        headers: {
-                          ...form.getHeaders(),
-                        }
-                      }).then(r => {
-                        var pathArray = r.data[0].url.split( '/' );
-                        var host = pathArray[2];
-                        var cid = host.split( '.' )[0];
-                        resolve(cid);
-                      })
-                      .catch(error => {
-                        console.log('upload failed --------');
-                        response_exit.errors.push({
-                          itemId: item,
-                          reason: error
-                        });
-                        reject(error)
-                      })
-    
-                    } catch (error) {
-                      console.log('upload failed: ', error);
-                      response_exit.errors.push({
-                        itemId: item,
+                    form.append('ref', 'alexandria');
+                    form.append('refId', item);
+                    form.append('field', field);
+
+                    console.log('uploading file with id: ', item);
+                    // console.log('uploading file with field: ', field);
+                    // console.log('uploading file form: ', form);
+                    // console.log('headers: ', form.getHeaders());
+                    
+                    await axios({
+                      method: 'post',
+                      url: `${api_endpoint}/upload`,
+                      data: form,
+                      maxContentLength: Infinity,
+                      maxBodyLength: Infinity,
+                      headers: {
+                        ...form.getHeaders(),
+                      }
+                    }).then(r => {
+                      console.log('uploaded file: ', r.data[0].url);
+                      var pathArray = r.data[0].url.split( '/' );
+                      var host = pathArray[2];
+                      var cid = host.split( '.' )[0];
+                      resolve(cid);
+                    })
+                    .catch(error => {
+                      console.log('upload failed --------', JSON.stringify(error));
+                      let exit = {
+                        action: 'uploadFile',
+                        item: item,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
-                    }
+                    })
                   })
                 }); 
   
@@ -687,10 +707,12 @@ const importFromUrl = (params) => {
                       })
                     } catch (error) {
                       console.log('screen failed: ', error);
-                      response_exit.errors.push({
+                      let exit = {
+                        action: 'saveScreen',
                         source: source,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
                     }
                   })
@@ -709,16 +731,23 @@ const importFromUrl = (params) => {
                           resolve(`${url}`);
                         } catch (error) {
                           console.log('downloading failed: ', error);
-                          response_exit.errors.push(error);
+                          let exit = {
+                            action: 'downloadingFile',
+                            source: url,
+                            reason: error
+                          }
+                          response_exit.errors.push(exit);
                           resolve(error);
                         }
                       })
                       .catch(error => {
                         console.log('downloading failed: ', error);
-                        response_exit.errors.push({
-                          url: url,
+                        let exit = {
+                          action: 'savingFile',
+                          source: url,
                           reason: error
-                        });
+                        }
+                        response_exit.errors.push(exit);
                         reject(error)
                       })
                       
@@ -735,10 +764,12 @@ const importFromUrl = (params) => {
                       */
                     } catch (error) {
                       console.log('downloading failed: ', error);
-                      response_exit.errors.push({
-                        url: url,
+                      let exit = {
+                        action: 'saveFile',
+                        source: url,
                         reason: error
-                      });
+                      }
+                      response_exit.errors.push(exit);
                       reject(error)
                     }
                   })
@@ -749,43 +780,60 @@ const importFromUrl = (params) => {
 
                 // save doc's screenshot
                 try {
-                  const saveScreenshot = await saveScreen(doc_source);
-                  // upload screenshot
-                  const cid = await uploadFile(`./screenshot/${saveScreenshot}`, itemId, 'proof');
-                  const metadata = {
-                    item: itemId,
-                    file: saveScreenshot,
-                    cid: cid
-                  };
-                  response_exit.imports.push(metadata);
-                  response_exit.screen_imported.push(metadata);
-                  response_exit.total_screen_imported ++;
+                  await saveScreen(doc_source)
+                  .then( async saveScreenshot => {
+                    // upload screenshot
+                    await setTimeout(async () => {
+                      try {
+                        const cid = await uploadFile(`./compress/${saveScreenshot}`, itemId, 'proof');
+                        console.log('saved proof with cid: ', cid);
+                        const metadata = {
+                          item: itemId,
+                          file: saveScreenshot,
+                          action: 'saveScreenshot',
+                          source: document_url,
+                          cid: cid
+                        };
+                        response_exit.imports.push(metadata);
+                        response_exit.screen_imported.push(metadata);
+                        response_exit.total_screen_imported ++;
+                      } catch (error) {
+                        console.log('error uploading screenshot: ', error);
+                        response_exit.total_screen_errors.push(itemId);
+                        response_exit.errors.push({
+                          item: itemId,
+                          action: 'saveScreenshot',
+                          reason: error
+                        });
+                      }
+                    }, 1000);
+                  });
 
                 } catch (error) {
                   console.log('error saving screenshot: ', error);
                   response_exit.total_screen_errors.push(itemId);
                   response_exit.errors.push({
-                    itemId: itemId,
+                    item: itemId,
+                    action: 'saveScreenshot',
                     reason: error
                   });
                 }
 
                 try {
                   const doc_name = await getName(document_url);
-                  console.log('getting document headers: ', doc_name['headers']);
                   // docType
                   let res_type = doc_name['headers']['content-type'];
-                  console.log('check file content-type: ', res_type);
-
-                  var re = /(?:\.([^.]+))?$/;
-                  let url = new URL(document_url);
-                  let cleanUrl = new URLSearchParams(url.search); 
-                  var ext = re.exec(cleanUrl)[1];
-                  console.log('check file extention: ', ext);
-
+                  
+                  // let url = new URL(document_url);
+                  // var re = /(?:\.([^.]+))?$/;
+                  // let cleanUrl = new URLSearchParams(url.search); 
+                  // var ext = re.exec(cleanUrl)[1];
+                  
+                  let extUrl = document_url.split(/[#?]/)[0].split('.').pop().trim();
                   let mimeType = mime.extension(res_type);
-                  console.log('check file extention w/mimeType: ', mimeType);
-
+                  console.log(`checking mimetype: ${mimeType}`);
+                  console.log(`checking extension: ${res_type} / ext: ${extUrl}`);
+                  
                   // check ext by headers
                   switch (res_type) {
                     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
@@ -801,6 +849,7 @@ const importFromUrl = (params) => {
                     case 'application/csv':
                     case 'application/octet-stream':
                     case 'text/csv; charset=utf-8':
+                    case 'text/csv;charset=UTF-8':
                       res_type = 'csv'
                       break;
                     case 'text/plain;charset=UTF-8':
@@ -808,12 +857,22 @@ const importFromUrl = (params) => {
                       break;
                     case 'text/html;charset=UTF-8':
                     case 'text/html; charset=utf-8':
-                      res_type = 'txt'
+                      if (mimeType){
+                        res_type = mimeType;
+                      } else {
+                        // if file has extention, keep it
+                        if (extUrl.length <5){
+                          res_type = extUrl;
+                        } else {
+                          res_type = 'txt';
+                        }
+                      }
                       break;
                     case 'application/vnd.oasis.opendocument.spreadsheet':
                     case 'application/oleobject':
                     case 'application/ods':
                     case 'text/ods; charset=utf-8':
+                    case 'application /vnd.openxmlformats-officedocument.wordprocessingml.document':
                       res_type = 'ods'
                       break;
                     case 'application/json; charset=utf-8':
@@ -823,50 +882,69 @@ const importFromUrl = (params) => {
                       res_type = 'json'
                       break;
                     default:
-                      if (ext){
-                        // if file has extention, keep it
-                        res_type = ext;
-                      } else {
+                      if (mimeType){
                         res_type = mimeType;
+                      } else {
+                        // if file has extention, keep it
+                        res_type = extUrl;
                       }
                       break;
                   }
-
-                  nameFile = `${itemId}.${res_type}`;
+                  
+                  console.log('applying ext: ', res_type);
+                  nameFile = `${itemId}`;
+                  console.log('name file: ', nameFile);
 
                   // save doc's file
                   let cidFile;
                   console.log(`saving doc file for item ${itemId} - ${nameFile}`);
-                  const file = await saveFile(nameFile, document_url);
-                  console.log('document downloaded: ', file);
-                  cidFile = await uploadFile(`./documents/${nameFile}`, itemId, 'file');
-                  // group 'other' type 
-                  if (
-                    res_type !== 'pdf' &&
-                    res_type !== 'csv' &&
-                    res_type !== 'xls' &&
-                    res_type !== 'xlsx' &&
-                    res_type !== 'ods'
-                  ) {
-                    res_type = 'other'
-                  }
-                  // saving CID
-                  await saveCID(itemId, cidFile, res_type, mimeType ? mimeType : res_type);
-                  // add to response
-                  const metadata = {
-                    item: itemId,
-                    file: nameFile,
-                    cid: cidFile
-                  };
-                  response_exit.imports.push(metadata);
-                  response_exit.docs_imported.push(metadata);
-                  response_exit.total_docs_imported ++;
+                  await saveFile(nameFile, document_url)
+                  .then(async file => {
+                    console.log('document downloaded: ', file);
+                    await setTimeout(async () => {
+                      try {
+                        cidFile = await uploadFile(`./documents/${nameFile}`, itemId, 'file');
+                        // group 'other' type 
+                        if (
+                          res_type !== 'pdf' &&
+                          res_type !== 'csv' &&
+                          res_type !== 'xls' &&
+                          res_type !== 'xlsx' &&
+                          res_type !== 'ods'
+                        ) {
+                          res_type = 'other'
+                        }
+                        // saving CID
+                        await saveCID(itemId, cidFile, res_type, mimeType ? mimeType : res_type);
+                        // add to response
+                        const metadata = {
+                          item: itemId,
+                          file: nameFile,
+                          action: 'saveCID',
+                          source: document_url,
+                          cid: cidFile
+                        };
+                        response_exit.imports.push(metadata);
+                        response_exit.docs_imported.push(metadata);
+                        response_exit.total_docs_imported ++;
+                      } catch (error) {
+                        response_exit.total_docs_errors.push(document_url);
+                        console.log('uploading file failed ------', error);
+                        response_exit.errors.push({
+                          source: document_url,
+                          action: 'saveFile',
+                          reason: error
+                        });
+                      }
+                    }, 1000);
+                  })
 
                 } catch (error) {
                   response_exit.total_docs_errors.push(document_url);
-                  console.log('saving file failed ------');
+                  console.log('saving file failed ------', error);
                   response_exit.errors.push({
-                    url: document_url,
+                    source: document_url,
+                    action: 'saveFile',
                     reason: error
                   });
                 }
@@ -913,11 +991,12 @@ const importFromUrl = (params) => {
               ****************************************
               ******** DONE IMPORTING DOCUMENTS ******
               ** DOCS: ${response_exit.documents} ****
+              ** ERRORS: ${response_exit.total_docs_errors.length} ****
               ****************************************
               `
             );
 
-            await doneImport(importItem.id, response_exit.documents, response_exit.total_docs_errors, response_exit.docs_imported);
+            await doneImport(importItem.id, response_exit.documents, response_exit.errors, response_exit.docs_imported);
             response_exit.importID = importItem.id;
 
             console.log(
@@ -963,6 +1042,170 @@ const importFromUrl = (params) => {
   });
 };
 
+const importAll = (params) => {
+  
+  const owner = process.env.WALLET_OWNER;
+  const api_endpoint = process.env.API_ENDPOINT;
+
+  console.log(
+    `
+    ****************************************
+    ** ENDPOINT: ${api_endpoint} ***********
+    ** OWNER: ${owner} *********************
+    ****************************************
+    `
+  );
+
+  return new Promise(async (resolve, reject) => {
+    //console.log('getting params and query: ', params, query);
+    if (!params.operation) { reject('missing operation'); return;}
+    if (!params.source) { reject('missing source'); return;}
+
+    let valid = utils.validSource(params.source);
+    if (!valid){
+      reject('source not available yet');
+    } else {
+      // get all links
+      // check source
+      const getAllSource = (async source =>{
+        console.log('getting links for: ', source);
+        let source_search;
+        switch (source) {
+          case 'datos-abiertos':
+            source_search = 'datos.gob.do';
+            break;
+          default:
+            source_search = 'no-source';
+            break;
+        }
+
+        const query = qs.stringify({
+          _where: [{ source_contains: source_search }],
+          _start: 0,
+          _limit: 0
+        });
+
+        return await axios.get(`${api_endpoint}/imports?${query}`)
+          .then(function (links) {
+            return links;
+          })
+          .catch(function (error) {
+            return error;
+          });
+      });
+      
+      let linksData;
+      switch (params.operation) {
+        case 'all':
+          linksData = await getAllSource(params.source);
+          break;
+        default:
+          reject({
+            source: params.source,
+            action: 'getOperation',
+            reason: 'operation not valid'
+          });
+          return;
+      }
+
+      if (
+        !linksData.data || 
+        linksData.data.length === 0
+      ){
+        reject({
+          source: params.source,
+          action: 'getAllSource',
+          reason: 'import not found'
+        });
+        return;
+      }
+
+      const linksUrl = linksData.data;
+      
+      const links = linksUrl.filter((v,i,a)=>a.findIndex(t=>(t.source===v.source))===i);
+      // links.splice(0, 199);
+      const links_length = links.length;
+
+      let response = [];
+      let response_errors = [];
+      for (let index = 0; index < links_length; index++) {
+        
+        const link = links[index];
+        // loop and call importFromUrl();
+        let paramsLink = {
+          baseUrl: `https://datos.gob.do`,
+          startUrl: `${link.source}`
+        }
+
+        console.log(
+          `
+          ****************************************
+          ****************************************
+          *********** START RE-IMPORTING **********
+          ** BASE: ${ paramsLink.baseUrl } ********
+          ** START: ${ paramsLink.startUrl } ******
+          *********** RECORD: ${link.id} ********
+          ** RECORD: ${ index +1 } / ${links_length} **************
+          ****************************************
+          `
+        );
+
+        
+        await importFromUrl(paramsLink)
+        .then(imported => {
+          response.push(imported);
+        })
+        .catch(error => {
+          response_errors.push(error);
+        })
+        
+        if (index === links_length-1){
+          
+          console.log(
+            `
+            ****************************************
+            ****************************************
+            *********** DONE RE-IMPORTING ****
+            ************* RECORDS ******************
+            ** RECORDS: ${ index +1 } / ${links_length} **************
+            ****************************************
+            `
+          );
+
+          let res = {
+            response,
+            records: links_length,
+            source: params.source,
+            operation: params.operation,
+            response_errors
+          }
+
+          resolve(res); 
+          return;
+        }
+
+        console.log(
+          `
+          ****************************************
+          ****************************************
+          *********** DONE RE-IMPORTING **********
+          *********** RECORDS: ${link.id} ********
+          *********** NEXT RECORDS ***************
+          ** RECORD: ${ index +1 } / ${links_length} **************
+          ****************************************
+          `
+        );
+
+      }
+      
+    }
+
+  })
+
+
+}
+
 module.exports = {
-    importFromUrl
+    importFromUrl,
+    importAll
 }

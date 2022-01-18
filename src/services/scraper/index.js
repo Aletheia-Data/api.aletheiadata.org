@@ -9,36 +9,21 @@ const utils = require('../../utils');
 const processUrl = async (params, query) => {
   return new Promise(async (resolve, reject) => {
     //console.log('getting params and query: ', params, query);
-    if (!params.category) { reject('missing category'); return;}
-    if (!params.value) { reject('missing value'); return;}
-    if (!params.source) { reject('missing source'); return;}
+    if (!params.baseUrl) { reject('missing base url'); return;}
+    if (!params.startUrl) { reject('missing start url'); return;}
 
-    const valid_category = [
-      'organization'
+    const valid_base = [
+      'https://datos.gob.do'
     ];
 
-    if (!valid_category.includes(params.category)) { reject('wrong category'); return;}
-    const valid_source = [
-      'datos-abiertos'
-    ];
-    
-    if (!valid_source.includes(params.source)) { reject('source not available yet'); return;}
+    if (!valid_base.includes(params.baseUrl)) { reject('wrong base url'); return;}
     
     try {
-      
-      let base_url;
-      let startUrl;
-      switch (params.source) {
-        case 'datos-abiertos':
-          base_url = `https://datos.gob.do`;
-          startUrl = `${base_url}/${params.category}/${params.value}`;
-          break;
-      }
 
       // config
       const config = {
-        baseSiteUrl: base_url,
-        startUrl: startUrl,
+        baseSiteUrl: params.baseUrl,
+        startUrl: params.startUrl,
         filePath: './documents/',
         cloneFiles: false,
         concurrency: 10, //Maximum concurrent jobs. More than 10 is not recommended.Default is 3.
@@ -97,8 +82,8 @@ const processUrl = async (params, query) => {
       const data = {
         title: title.getData().toString(),
         description: description.getData().toString(),
-        startUrl: startUrl,
-        source: base_url,
+        startUrl: params.startUrl,
+        source: params.baseUrl,
         original_source: datasetDetails.getData()[0].toString(),
         errors_downloads: doc_download.getErrors(),
         body: root.getData()

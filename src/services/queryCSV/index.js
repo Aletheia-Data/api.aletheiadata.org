@@ -18,11 +18,11 @@ const queryFile = async (params, query) => {
   return new Promise(async (resolve, reject) => {
     //console.log('getting params and query: ', params, query);
     if (!params.cid) { reject('missing cid'); return;}
-    if (!params.type) { reject('missing file type'); return;}
+    if (!params.format) { reject('missing file format'); return;}
     if (!params.host) { reject('missing host'); return;}
     // file type
     const fileType = ['csv'];
-    if (!fileType.includes(params.type)) { reject('wrong type'); return; }
+    if (!fileType.includes(params.format)) { reject('format not available'); return; }
     // http://localhost:8000/services/transform-csv/ipfs/bafybeifds2zwfw7zn7gbh7oa2z23xyuyg6rbs6xizbsvxtg5xrfl4quo3u
     // set host on params as it's a IPFS file
     // console.log('queryFile - get params -----', params);
@@ -34,7 +34,8 @@ const queryFile = async (params, query) => {
         const file = params.cid + '.ipfs.dweb.link';  
         url = `https://${file}`
       } else if (params.host === 'http'){
-        // if it's IFPS file
+        // WARNING: experimental feature
+        // this queries on a remote file
         url = `${cors_anywhere}/${params.cid}`
       } else {
         console.log('type: ', params.host);
@@ -90,7 +91,7 @@ const queryFile = async (params, query) => {
         }
 
         // adding id to record
-        chunk.id = `record_${counter}`;
+        chunk.id = counter;
         counter ++;
 
         // adding to minisearch
@@ -122,7 +123,7 @@ const queryFile = async (params, query) => {
         // Search only specific fields
         // init search, sorting, filtering
         let queryResult;
-        console.log('query: ', query);
+        console.log(`queryFile - query [${JSON.stringify(query)}]`);
         if (!query.fields && !query.value){
           // get all
           resolve(data);
@@ -136,8 +137,8 @@ const queryFile = async (params, query) => {
             resolve('missing value');
             return;
           }
-          console.log('queryFile - query on fields: ', query.fields);
-          console.log('queryFile - query value: ', query.value);
+          console.log(`queryFile - query on fields [${query.fields}]`);
+          console.log(`queryFile - query value [${query.value}]`);
           // get array from query string
           const query_fields = query.fields.split(',');
           query_fields.map((qf)=>{
@@ -148,31 +149,75 @@ const queryFile = async (params, query) => {
               return;
             }
           })
-          console.log('queryFile - query fields: ', query_fields);
+          console.log(`queryFile - query fields ${JSON.stringify(query_fields)}`);
           // get number of results
-          if (query.limit){
-            console.log('queryFile - query limit: ', query.limit);
-            if (!utils.isNumber(query.limit)) {
-              if (query.limit !== 'none'){
-                resolve('limit not valid');
-                return;
+          queryResult = await miniSearch.search(query.value, { fields: query_fields });
+          // console.log('here -----> ', queryResult);
+          if (queryResult.length > 0){
+            // order by
+            if (query.order){
+              const orderParts = (query.order).split(':');
+              /**
+               * orderParts[0] = field
+               * orderParts[1] = order (asc/desc)
+               */
+              console.log(`queryFile - query order by user [${query.order}]`);
+              queryResult = await queryResult.sort(function(a, b) { 
+                return a[orderParts[0]] - b[orderParts[0]];
+              });
+              
+              if (orderParts[1]){
+                console.log(`queryFile - query order by [${orderParts[0]} : ${orderParts[1]}]`);
+                switch (orderParts[1]) {
+                  case 'asc':
+                    queryResult = queryResult;
+                    break;
+                  case 'desc':
+                    queryResult = queryResult.reverse();
+                    break;
+                  default:
+                    queryResult = queryResult;
+                    break;
+                }
               } else {
-                // check if limit = 'none', if so give all results
-                console.log('queryFile - CAUTION - query without limit');
-                queryResult = await miniSearch.search(query.value, { fields: query_fields });
+                console.log(`queryFile - query order by [${orderParts[0]} : ${orderParts[1]}]`);
+                queryResult = queryResult.reverse();
               }
             } else {
-              console.log('queryFile - query limit by user', query.limit);
-              queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, query.limit);
+              console.log('queryFile - query order default [ID]');
+              queryResult = queryResult.sort(function(a, b) { 
+                return a['id'] - b['id'];
+              });
             }
-          } else {
-            // default: 25 results
-            console.log('queryFile - query default limit: 25 records');
-            queryResult = await miniSearch.search(query.value, { fields: query_fields }).slice(0, 25);
+            // limit by
+            query.start = query.start ? query.start : 0;
+            if ((query.limit !== '0' && query.limit !== 0) && query.limit){
+              console.log(`queryFile - query limit [${query.limit}]`);
+              console.log(`queryFile - query start [${query.start}]`);
+              if (!utils.isNumber(query.limit)) {
+                if (query.limit !== 'none'){
+                  resolve('limit not valid');
+                  return;
+                } else {
+                  // check if limit = 'none', if so give all results
+                  console.log('queryFile - CAUTION - query without limit');
+                  queryResult = queryResult.slice(0, query.limit);
+                }
+              } else {
+                console.log(`queryFile - query limit by user [start: ${query.start} - limit: ${query.limit}]`);
+                queryResult = queryResult.slice(query.start,parseInt(query.start)+parseInt(query.limit));
+              }
+            } else {
+              // default: 25 results
+              console.log('queryFile - query default limit [25 records]', query.start);
+              queryResult = queryResult.slice(query.start,parseInt(query.start)+25);
+            }
           }
+          
+          // return result
+          return resolve(queryResult);
+          
         }
-        // return result
-        return resolve(queryResult);
       });
   });
 };

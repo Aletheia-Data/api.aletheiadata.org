@@ -61,8 +61,6 @@ const makeScreenshot = async (params, query) => {
     
     await nightmare.end();
 
-    /*
-
     await compress_images(
       `./screenshot/${name}.${params.format}`,
       "./compress/",
@@ -82,8 +80,8 @@ const makeScreenshot = async (params, query) => {
         }
       }
     );
-    */
-    resolve(`${name}.${params.format}`);
+    
+    // resolve(`${name}.${params.format}`);
 
   });
 };

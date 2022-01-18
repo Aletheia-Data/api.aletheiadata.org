@@ -2,7 +2,7 @@ const _minisearch = require('./minisearch');
 const _transformCSV = require('./transformCSV');
 const _scraper = require('./scraper');
 const _screenshot = require('./screenshot');
-const _import = require('./import');
+const _importFile = require('./import');
 const _queryCSV = require('./queryCSV');
 
 const exit = ((res, code, body)=>{
@@ -97,7 +97,7 @@ exports.importUrl = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
-  await _import.importFromUrl(params, query)
+  await _importFile.importFromUrl(params, query)
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);
@@ -107,4 +107,21 @@ exports.importUrl = async (req, res) => {
     exit(res, 500, err);
   })
   console.log('done search ------');
+};
+
+
+exports._import = async (req, res) => {
+  console.log('starting importing ------');
+  const { params, query } = req; 
+  console.log('start importing ------');
+  await _importFile.importAll(params, query)
+  .then((results)=>{
+    console.log('done importing -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error importing -------');
+    exit(res, 500, err);
+  })
+  console.log('done importing ------');
 };
