@@ -12,7 +12,7 @@ dotenv.config();
 // imports
 const services = require('./src/services');
 const departments = require('./src/departments');
-const categories = require('./src/api/category');
+const categories = require('./src/api/categories');
 
 /******************/
 /******************/
