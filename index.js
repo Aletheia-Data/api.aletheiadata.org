@@ -12,6 +12,7 @@ dotenv.config();
 // imports
 const services = require('./src/services');
 const departments = require('./src/departments');
+const categories = require('./src/api/category');
 
 /******************/
 /******************/
@@ -53,11 +54,21 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 
 /******************/
 /******************/
+/***** DATA API ***/
+/******************/
+/******************/
+
+/* Data API */
+console.log('activating API');
+app.get(`/v1/api/search/categories/getAll`, categories.getAllCategories);
+
+/******************/
+/******************/
 /******* SEARCH ******/
 /******************/
 /******************/
 const api_endpoint = process.env.API_ENDPOINT;
-console.log('activating api_endpoint: ', api_endpoint);
+console.log('activating search on: ', api_endpoint);
 
 const api_version = version;
 console.log('activating endpoints for version: ', api_version);
