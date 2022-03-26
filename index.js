@@ -12,7 +12,7 @@ dotenv.config();
 // imports
 const services = require('./src/services');
 const departments = require('./src/departments');
-const categories = require('./src/api/categories');
+const entities = require('./src/api/entities');
 
 /******************/
 /******************/
@@ -59,8 +59,8 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 /******************/
 
 /* Data API */
-console.log('activating API');
-app.get(`/v1/api/search/categories/getAll`, categories.getAllCategories);
+console.log('activating Data API');
+app.get(`/v1/api/search/:entity/getAll`, entities.getAll);
 
 /******************/
 /******************/
