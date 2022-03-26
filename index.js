@@ -60,7 +60,7 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 
 /* Data API */
 console.log('activating Data API');
-app.get(`/v1/api/search/:entity/getAll`, entities.getAll);
+app.get(`/v1/api/:entity/getAll`, entities.getAll);
 
 /******************/
 /******************/
