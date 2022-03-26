@@ -2,6 +2,7 @@ const PORT = process.env.PORT || 8000
 const express = require('express')
 const apicache = require('apicache')
 const app = express();
+const cors = require('cors');
 let cache = apicache.middleware;
 
 const { version } = require('./package.json');
@@ -20,6 +21,8 @@ const entities = require('./src/api/entities');
 /******************/
 /******************/
 app.use(cache('1 day'));
+
+app.use(cors())
 
 app.get('/', (req, res) => {
     res.json('Welcome to Aletheia Data API')
@@ -96,4 +99,4 @@ app.get(`/v1/_import/:source/:operation`, services._import);
 /******************/
 /***** LISTEN PORT ******/
 /******************/
-app.listen(PORT, () => console.log(`server running on PORT ${PORT}`))
+app.listen(PORT, () => console.log(`CORS-enabled server running on PORT ${PORT}`))
