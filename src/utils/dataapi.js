@@ -15,10 +15,11 @@ exports.find = (params, query) =>{
         for (key in query) {
             // remove limit from filters
             if (key !== 'limit'){
+                if (query[key] === 'true' || query[key] === 'false'){ query[key] = JSON.parse(query[key])}
                 data.filter[key] = query[key]
             }
         }
-    
+
         var config = {
             method: 'post',
             url: `${process.env.MONGODB_DATA_API_ENDPOINT}/app/${process.env.MONGODB_DATA_API_APP_ID}/endpoint/data/beta/action/find`,
