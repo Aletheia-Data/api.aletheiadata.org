@@ -15,6 +15,8 @@ const services = require('./src/services');
 const departments = require('./src/departments');
 const entities = require('./src/api/entities');
 
+// TODO: removed deprecated endpoints after during internal testing v1.3.0
+
 /******************/
 /******************/
 /***** ENTRY ******/
@@ -42,8 +44,7 @@ app.get('/utils/search/:type/:cid', services.search);
 /******************/
 /******************/
 /* V1 */
-const services_version = process.env.SERVICES_VERSION;
-console.log('activating services for version: ', services_version);
+console.log('activating services for version: ', version);
 
 /* Screenshots */
 app.get('/v1/services/screenshot/:format/:width/:height', services.makeScreenshot);
@@ -61,9 +62,17 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 /******************/
 /******************/
 
-/* Data API */
+/* Data API - DEPRECATED */
 console.log('activating Data API');
 app.get(`/v1/api/:entity/getAll`, entities.getAll);
+
+/******************/
+/******************/
+/***** OPEN API ***/
+/******************/
+/******************/
+
+app.get(`/v2/open-data/:entity/getAll`, entities.getAll);
 
 /******************/
 /******************/
@@ -72,18 +81,16 @@ app.get(`/v1/api/:entity/getAll`, entities.getAll);
 /******************/
 const api_endpoint = process.env.API_ENDPOINT;
 console.log('activating search on: ', api_endpoint);
+console.log('activating endpoints for version: ', version);
 
-const api_version = version;
-console.log('activating endpoints for version: ', api_version);
-
-/* DEPRECATED */
-app.get(`/v2/:department/:type/:host/:cid`, departments.getDepartments);
-
-/* v1.0.0 */
+/* v1.0.0  - DEPRECATED */
 app.get(`/v1/_search/:department/:type/:host/:cid`, departments.getDepartments);
-/* v1.1.0 */
+
+/* v1.1.0 - DEPRECATED */
 app.get(`/v1/_search/:host/:format/:cid`, services._search);
 
+/* v2.0.0 */
+app.get(`/v2/_search/:host/:cid`, services._search);
 
 /******************/
 /**** CAUTION *****/
@@ -91,10 +98,12 @@ app.get(`/v1/_search/:host/:format/:cid`, services._search);
 /******************/
 /******************/
 
-/* v1.0.0 */
+/* v1.0.0 - DEPRECATED */
 app.get(`/v1/import/:baseUrl/:startUrl`, services.importUrl);
 app.get(`/v1/_import/:source/:operation`, services._import);
 
+/* v2.0.0 */
+app.get(`/v2/import/datos-abiertos/:operation`, services._import);
 
 /******************/
 /***** LISTEN PORT ******/
