@@ -8,17 +8,20 @@ exports.find = (params, query) =>{
             "collection": params.entity,
             "database": "heptastadion",
             "dataSource": "heptastadion",
-            "limit": query.limit ? parseInt(query.limit) : 5
+            "limit": query.limit ? parseInt(query.limit) : 5,
+            "filter": {}
         };
-    
-        if (query.filters){
-            console.log('applying filters ------',JSON.parse(query.filters));
-            data.filter = JSON.parse(query.filters)
+
+        for (key in query) {
+            // remove limit from filters
+            if (key !== 'limit'){
+                data.filter[key] = query[key]
+            }
         }
     
         var config = {
             method: 'post',
-            url: `https://data.mongodb-api.com/app/${process.env.MONGODB_DATA_API_APP_ID}/endpoint/data/beta/action/find`,
+            url: `${process.env.MONGODB_DATA_API_ENDPOINT}/app/${process.env.MONGODB_DATA_API_APP_ID}/endpoint/data/beta/action/find`,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Request-Headers': '*',
