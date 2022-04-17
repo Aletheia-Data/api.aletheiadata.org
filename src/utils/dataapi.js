@@ -8,13 +8,19 @@ exports.find = (params, query) =>{
             "collection": params.entity,
             "database": "heptastadion",
             "dataSource": "heptastadion",
-            "limit": query.limit ? parseInt(query.limit) : 5,
-            "filter": {}
+            "limit": query.limit ? parseInt(query.limit) : 25,
+            "filter": {
+            },
+            "skip": query.start ? parseInt(query.start) : 0
         };
+
+        if (query.id){
+            data.filter["_id"] = { "$oid": `${query.id}` }
+        }
 
         for (key in query) {
             // remove limit from filters
-            if (key !== 'limit'){
+            if (key !== 'limit' && key !== 'id' && key !== 'start'){
                 if (query[key] === 'true' || query[key] === 'false'){ query[key] = JSON.parse(query[key])}
                 data.filter[key] = query[key]
             }
