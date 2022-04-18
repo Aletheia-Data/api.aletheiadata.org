@@ -36,5 +36,8 @@
   },
   "engines": {
     "node": "16.x"
+  },
+  "devDependencies": {
+    "web3.storage": "^4.0.0"
   }
 }
