@@ -170,7 +170,8 @@ const queryFile = async (params, query) => {
             } else {
               console.log('queryFile - query order default [ID]');
               queryResult = queryResult.sort(function(a, b) { 
-                return a['id'] - b['id'];
+                // default order DESC
+                return b['score'] - a['score'];
               });
             }
             // limit by

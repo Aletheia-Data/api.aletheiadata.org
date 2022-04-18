@@ -66,7 +66,7 @@ app.get(`/v1/services/search/:host/:cid`, services.minisearch);
 /******************/
 /******************/
 /***** DATA API ***/
-/******************/
+/* DEPRECATED */
 /******************/
 
 /* DEPRECATED */
