@@ -12,7 +12,6 @@ dotenv.config();
 
 // imports
 const services = require('./src/services');
-const departments = require('./src/departments');
 const entities = require('./src/api/entities');
 
 // TODO: removed deprecated endpoints after during internal testing v1.3.0
@@ -35,8 +34,6 @@ app.get('/', (req, res) => {
 /****** UTILS *****/
 /******************/
 /******************/
-app.get('/utils/transform-csv/:host/:cid', services.getJson);
-app.get('/utils/search/:type/:cid', services.search);
 
 /******************/
 /******************/
@@ -46,15 +43,25 @@ app.get('/utils/search/:type/:cid', services.search);
 /* V1 */
 console.log('activating services for version: ', version);
 
-/* Screenshots */
-app.get('/v1/services/screenshot/:format/:width/:height', services.makeScreenshot);
-
 /* Scraper */
 app.get('/v1/services/scraper/:source/:category/:value', services.scraping);
 
 /* Services */
+
+/* DEPRECATED */
+app.get('/v1/services/screenshot/:format/:width/:height', services.makeScreenshot);
+
+/* Screenshots */
+if (process.env.WEB3_STORAGE_API_KEY){
+    console.log('activating Web3 Storage for screenshoot service');
+} else {
+    throw new Error('missing Web3 Storage API Key')
+}
+app.get('/v1/services/certified-screenshot/:width/:height', services.certScreenshot);
+/* Transform CSV */
 app.get(`/v1/services/transform-csv/:host/:cid`, services.getJson);
-app.get(`/v1/services/search/:host/:type/:cid`, services.search);
+/* Search */
+app.get(`/v1/services/search/:host/:cid`, services.minisearch);
 
 /******************/
 /******************/
@@ -62,7 +69,7 @@ app.get(`/v1/services/search/:host/:type/:cid`, services.search);
 /******************/
 /******************/
 
-/* Data API - DEPRECATED */
+/* DEPRECATED */
 console.log('activating Data API');
 app.get(`/v1/api/:entity/getAll`, entities.getAll);
 
@@ -75,30 +82,12 @@ app.get(`/v1/api/:entity/getAll`, entities.getAll);
 app.get(`/v2/open-data/:entity/getAll`, entities.getAll);
 
 /******************/
-/******************/
-/******* SEARCH ******/
-/******************/
-/******************/
-const api_endpoint = process.env.API_ENDPOINT;
-console.log('activating search on: ', api_endpoint);
-console.log('activating endpoints for version: ', version);
-
-/* v1.0.0  - DEPRECATED */
-app.get(`/v1/_search/:department/:type/:host/:cid`, departments.getDepartments);
-
-/* v1.1.0 - DEPRECATED */
-app.get(`/v1/_search/:host/:format/:cid`, services._search);
-
-/* v2.0.0 */
-app.get(`/v2/_search/:host/:cid`, services._search);
-
-/******************/
 /**** CAUTION *****/
 /***** IMPORT *****/
 /******************/
 /******************/
 
-/* v1.0.0 - DEPRECATED */
+/* DEPRECATED */
 app.get(`/v1/import/:baseUrl/:startUrl`, services.importUrl);
 app.get(`/v1/_import/:source/:operation`, services._import);
 

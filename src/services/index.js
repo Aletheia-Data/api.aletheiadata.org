@@ -28,7 +28,7 @@ exports.getJson = async (req, res) => {
   console.log('done csvtojson ------');
 }
 
-exports.search = async (req, res) => {
+exports.minisearch = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
@@ -49,7 +49,7 @@ exports._search = async (req, res) => {
   console.log('starting search ------');
   const { params, query } = req; 
   console.log('start query ------');
-  await _queryCSV.queryFile(params, query)
+  await _queryCSV.queryFile(params, query) 
   .then((results)=>{
     console.log('done query -------');
     exit(res, 200, results);
@@ -78,19 +78,35 @@ exports.scraping = async (req, res) => {
 };
 
 exports.makeScreenshot = async (req, res) => {
-  console.log('starting search ------');
+  console.log('starting screenshot ------');
   const { params, query } = req; 
-  console.log('start query ------');
+  console.log('start screenshot ------');
   await _screenshot.makeScreenshot(params, query)
   .then((results)=>{
-    console.log('done query -------');
+    console.log('done screenshot -------');
     exit(res, 200, results);
   })
   .catch(err => {
-    console.log('error query -------');
+    console.log('error screenshot -------');
     exit(res, 500, err);
   })
-  console.log('done search ------');
+  console.log('done screenshot ------');
+};
+
+exports.certScreenshot = async (req, res) => {
+  console.log('starting screenshot ------');
+  const { params, query } = req; 
+  console.log('start screenshot ------');
+  await _screenshot.certScreenshot(params, query)
+  .then((results)=>{
+    console.log('done screenshot -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error screenshot -------');
+    exit(res, 500, err);
+  })
+  console.log('done screenshot ------');
 };
 
 exports.importUrl = async (req, res) => {
