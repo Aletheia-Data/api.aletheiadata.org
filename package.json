@@ -32,12 +32,10 @@
     "request": "^2.88.2",
     "split-file": "^2.3.0",
     "uuid": "^8.3.2",
-    "wait-loop": "^1.0.0"
+    "wait-loop": "^1.0.0",
+    "web3.storage": "^4.0.0"
   },
   "engines": {
     "node": "16.x"
-  },
-  "devDependencies": {
-    "web3.storage": "^4.0.0"
   }
 }
