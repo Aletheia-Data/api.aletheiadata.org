@@ -168,7 +168,7 @@ const queryFile = async (params, query) => {
                 queryResult = queryResult.reverse();
               }
             } else {
-              console.log('queryFile - query order default [ID]');
+              console.log('queryFile - query order default [score]');
               queryResult = queryResult.sort(function(a, b) { 
                 // default order DESC
                 return b['score'] - a['score'];
