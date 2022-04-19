@@ -21,10 +21,18 @@ exports.find = (params, query) =>{
         for (key in query) {
             // remove limit from filters
             if (key !== 'limit' && key !== 'id' && key !== 'start'){
+                // fix for error endpoint 
                 if (query[key] === 'true' || query[key] === 'false'){ query[key] = JSON.parse(query[key])}
-                data.filter[key] = query[key]
+
+                if (key === 'title' || key === 'name' || key === 'description'){
+                    // `like` operation for text fields
+                    data.filter[key] = { $regex: query[key] }
+                } else {
+                    // `eq` operation for rest of fields
+                    data.filter[key] = query[key]
+                }
             }
-        }
+        } 
 
         var config = {
             method: 'post',
