@@ -40,7 +40,6 @@ exports.find = (params, query) =>{
                 data.sort[field] = parseInt(value)
             })
             console.log(`sort query with: ${fields}`);
-            console.log(data);
         }
 
         for (key in query) {
