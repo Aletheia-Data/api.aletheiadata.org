@@ -18,9 +18,22 @@ exports.find = (params, query) =>{
             data.filter["_id"] = { "$oid": `${query.id}` }
         }
 
+        if (query.projection){
+            const pro = query.projection;
+            let fields = pro.split( ',' );
+            data.projection = {}
+            fields.map(fieldValue =>{
+                let field = fieldValue.split( ':' )[0];
+                let value = fieldValue.split( ':' )[1];
+                data.projection[field] = parseInt(value)
+            })
+            console.log(`projecting query with: ${fields}`);
+            console.log(data);
+        }
+
         for (key in query) {
             // remove limit from filters
-            if (key !== 'limit' && key !== 'id' && key !== 'start'){
+            if (key !== 'limit' && key !== 'id' && key !== 'start' && key !== 'projection'){
                 // fix for error endpoint 
                 if (query[key] === 'true' || query[key] === 'false'){ query[key] = JSON.parse(query[key])}
 
@@ -49,12 +62,18 @@ exports.find = (params, query) =>{
           
           await  axios(config)
           .then(function (response) {
+              // console.log(response);
               console.log(JSON.stringify(response.data));
               const result = response?.data?.documents ? response?.data?.documents : response?.data
               resolve(JSON.stringify(result));
           })
+          .catch(err =>{
+              console.log(err);
+              reject(`query failed: ${err}`)
+          })
       
         } catch (error) {
+            console.log(error);
           reject('query failed: ', error)
         }
       
