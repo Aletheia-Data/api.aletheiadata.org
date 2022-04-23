@@ -28,12 +28,30 @@ exports.find = (params, query) =>{
                 data.projection[field] = parseInt(value)
             })
             console.log(`projecting query with: ${fields}`);
+        }
+
+        if (query.sort){
+            const sort = query.sort;
+            let fields = sort.split( ',' );
+            data.sort = {}
+            fields.map(fieldValue =>{
+                let field = fieldValue.split( ':' )[0];
+                let value = fieldValue.split( ':' )[1];
+                data.sort[field] = parseInt(value)
+            })
+            console.log(`sort query with: ${fields}`);
             console.log(data);
         }
 
         for (key in query) {
             // remove limit from filters
-            if (key !== 'limit' && key !== 'id' && key !== 'start' && key !== 'projection'){
+            if (
+                key !== 'limit' && 
+                key !== 'id' && 
+                key !== 'start' && 
+                key !== 'projection' &&
+                key !== 'sort'
+            ){
                 // fix for error endpoint 
                 if (query[key] === 'true' || query[key] === 'false'){ query[key] = JSON.parse(query[key])}
 
