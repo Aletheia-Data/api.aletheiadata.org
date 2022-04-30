@@ -141,3 +141,19 @@ exports._import = async (req, res) => {
   })
   console.log('done importing ------');
 };
+
+exports.filecoin = async (req, res) => {
+  console.log('starting filecoin ------');
+  const { params } = req; 
+  console.log('start filecoin ------');
+  await _screenshot.getFilecoinInfo(params)
+  .then((results)=>{
+    console.log('done filecoin -------');
+    exit(res, 200, results);
+  })
+  .catch(err => {
+    console.log('error filecoin -------');
+    exit(res, 500, err);
+  })
+  console.log('done filecoin ------');
+};
