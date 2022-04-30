@@ -198,7 +198,29 @@ const certScreenshot = async (params, query) => {
   });
 };
 
+const getFilecoinInfo = async (params) => {
+  return new Promise(async (resolve, reject) => {
+    //console.log('getting params: ', params);
+    if (!params.cid) { reject('missing cid'); return;}
+    
+    const client = makeStorageClient()
+    try {
+      const status = await client.status(params.cid)
+      if (status){
+        resolve(status);
+      } else {
+        resolve('status not available');
+      }
+    } catch (error) {
+      reject('CID not valid')
+    }
+
+  });
+};
+
+
 module.exports = {
   makeScreenshot,
-  certScreenshot
+  certScreenshot,
+  getFilecoinInfo
 }

@@ -62,6 +62,8 @@ app.get('/v1/services/certified-screenshot/:width/:height', services.certScreens
 app.get(`/v1/services/transform-csv/:host/:cid`, services.getJson);
 /* Search */
 app.get(`/v1/services/search/:host/:cid`, services.minisearch);
+/* Filecoin */
+app.get(`/v1/services/filecoin/:cid`, services.filecoin);
 
 /******************/
 /******************/
