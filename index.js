@@ -1,8 +1,10 @@
 const PORT = process.env.PORT || 8000
 const express = require('express')
+const bodyParser = require('body-parser');
 const apicache = require('apicache')
-const app = express();
 const cors = require('cors');
+const fileupload = require("express-fileupload");
+
 let cache = apicache.middleware;
 
 const { version } = require('./package.json');
@@ -13,6 +15,7 @@ dotenv.config();
 // imports
 const services = require('./src/services');
 const entities = require('./src/api/entities');
+const assets = require('./src/operations/assets');
 
 // TODO: removed deprecated endpoints after during internal testing v1.3.0
 
@@ -21,9 +24,13 @@ const entities = require('./src/api/entities');
 /***** ENTRY ******/
 /******************/
 /******************/
-app.use(cache('1 day'));
+const app = express();
 
-app.use(cors())
+app.use(cache('1 day'));
+app.use(cors());
+app.use(fileupload());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 app.get('/', (req, res) => {
     res.json('Welcome to Aletheia Data API')
@@ -82,6 +89,15 @@ app.get(`/v1/api/:entity/getAll`, entities.getAll);
 /******************/
 
 app.get(`/v2/open-data/:entity/getAll`, entities.getAll);
+
+
+/******************/
+/******************/
+/***** OPERATIONS ***/
+/******************/
+/******************/
+
+app.post(`/v2/ops/assets/add`, assets.add);
 
 /******************/
 /**** CAUTION *****/
