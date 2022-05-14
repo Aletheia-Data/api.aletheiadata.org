@@ -26,7 +26,7 @@ const assets = require('./src/operations/assets');
 /******************/
 const app = express();
 
-app.use(cache('1 day'));
+// app.use(cache('1 day'));
 app.use(cors());
 app.use(fileupload());
 app.use(bodyParser.json({limit: '50mb'}));

@@ -96,7 +96,9 @@ const add = async (body, files) => {
         startUrl: docSource,
         original_source: docSource,
         records: 1,
-        documents: 0
+        documents: 0,
+        screenCID: '',
+        assetCID: ''
       }
 
       let result = [];
@@ -307,6 +309,7 @@ const add = async (body, files) => {
             try {
               var itemId = await post.createAsset(asset, importItem.id);
               importFiles.push(itemId);
+              response_exit.assetId = itemId;
               console.log('aletheia created: ', itemId);
               // increase document's count 
               response_exit.documents ++;
@@ -322,6 +325,7 @@ const add = async (body, files) => {
             // save doc's screenshot
             try {
                 const cid = await post.uploadAsset(asset.proof, itemId, 'proof');
+                response_exit.screenCID = cid;
                 console.log('saved proof with cid: ', cid);
                 const metadata = {
                     item: itemId,
@@ -374,6 +378,7 @@ const add = async (body, files) => {
             console.log(`saving doc file for item ${itemId}`);
             try {
                 cidFile = await post.uploadAsset(asset.fileUploaded, itemId, 'file');
+                response_exit.assetCID = cidFile;
                 // group 'other' type 
                 let type;
                 if (
