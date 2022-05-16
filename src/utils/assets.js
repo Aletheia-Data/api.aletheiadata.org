@@ -43,11 +43,11 @@ const add = async (body, files) => {
     if (!asset.categoryId) { reject('missing category'); return;}
 
     if (
-      !asset.sourceId && (!asset.sourceInfo.name || !asset.sourceInfo.url)
+      !asset.sourceId && (!asset.newSource.name || !asset.newSource.description || !asset.newSource.url)
       ) { reject('missing source information'); return;}
       
     if (
-      !asset.issuerId && (!asset.issuerInfo.name || !asset.issuerInfo.url)
+      !asset.issuerId && (!asset.newIssuer.name || !asset.newIssuer.description || !asset.newIssuer.url)
       ) { reject('missing issuer information'); return;}
     
     try {
