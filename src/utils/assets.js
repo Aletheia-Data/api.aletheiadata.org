@@ -147,7 +147,7 @@ const add = async (body, files) => {
         );
       } else {
           // double check just in case
-        const hasDepartment = await get.checkDepartment(issuerInfo.url);
+        const hasDepartment = await get.checkDepartment(newIssuer.url);
         if ( hasDepartment.data.length > 0 ){
             issuerId = hasDepartment.data[0].id;
             console.log(
@@ -160,7 +160,7 @@ const add = async (body, files) => {
                 `
               );
         } else {
-            const newDep = await post.createDepartment(issuerInfo);
+            const newDep = await post.createDepartment(newIssuer);
             issuerId = newDep.data.id;
             console.log(
                 `
@@ -210,7 +210,7 @@ const add = async (body, files) => {
 
       } else {
           // double check just in case
-        const hasSource = await get.checkSource(sourceInfo.url);
+        const hasSource = await get.checkSource(newSource.url);
         if ( hasSource.data.length > 0 ){
             sourceId = hasSource.data[0].id;
             console.log(
@@ -223,7 +223,7 @@ const add = async (body, files) => {
                 `
               );
         } else {
-            const newSrc = await post.createSource(sourceInfo);
+            const newSrc = await post.createSource(newSource);
             sourceId = newSrc.data.id;
             console.log(
                 `

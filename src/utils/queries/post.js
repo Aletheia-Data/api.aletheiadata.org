@@ -7,7 +7,7 @@ exports.createDepartment =  (( issuer )=>{
     return new Promise((resolve, reject) => {
       return axios.post(`${api_endpoint}/departments`, {
         "name": issuer.name,
-        "description": issuer.description,
+        "desciption": issuer.description,
         "website": issuer.url
       }).then(function(department) {
         resolve(department);
@@ -20,12 +20,12 @@ exports.createDepartment =  (( issuer )=>{
     })
   });
 
-  exports.createSource =  (( source, sourceInfo )=>{
+  exports.createSource =  (( source )=>{
     return new Promise((resolve, reject) => {
       return axios.post(`${api_endpoint}/sources`, {
-        "url": source,
-        "name": sourceInfo.url,
-        "description": sourceInfo.description,
+        "url": source.url,
+        "name": source.name,
+        "description": source.description,
         "status": "under_review",
       }).then(function(department) {
         resolve(department);
