@@ -130,13 +130,7 @@ exports.createDepartment =  (( issuer )=>{
               resolve(cid);
           })
           .catch(error => {
-              console.log('upload failed --------', JSON.stringify(error));
-              let exit = {
-                action: 'uploadFile',
-                item: item,
-                reason: error
-              }
-              response_exit.errors.push(exit);
+              console.log('upload failed --------', error);
               reject(error)
           })
           // delete file

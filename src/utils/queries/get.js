@@ -14,12 +14,6 @@ exports.getName = (( source )=>{
       })
       .catch(error => {
           console.log('getting failed --------');
-          let exit = {
-              action: 'gettingName',
-              source: source,
-              reason: error
-          }
-          response_exit.errors.push(exit);
           reject(error)
           return
       })

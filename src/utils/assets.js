@@ -357,7 +357,7 @@ const add = async (body, files) => {
                 console.log('saving file failed ------', error);
                 response_exit.errors.push({
                     source: asset.docSource,
-                    action: 'saveFile',
+                    action: 'gettingName',
                     reason: error
                 });
             }
@@ -421,7 +421,7 @@ const add = async (body, files) => {
                 console.log('uploading file failed ------', error);
                 response_exit.errors.push({
                     source: asset.docSource,
-                    action: 'saveFile',
+                    action: 'uploadFile',
                     reason: error
                 });
             }
