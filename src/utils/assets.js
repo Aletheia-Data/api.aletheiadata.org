@@ -362,7 +362,7 @@ const add = async (body, files) => {
                 });
             }
             // docType
-            let res_type = doc_info['headers']['content-type'];
+            let res_type = doc_info ? doc_info['headers']['content-type'] : null;
             let mimeType = asset.fileUploaded.mimetype;
             console.log(`checking mimetype: ${mimeType}`);
             console.log(`checking extension: ${res_type}`);
