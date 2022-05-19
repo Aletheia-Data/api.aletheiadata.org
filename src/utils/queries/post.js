@@ -119,6 +119,8 @@ exports.createDepartment =  (( issuer )=>{
           // console.log('headers: ', form.getHeaders());                
           // Display the key/value pairs
           await axios.post(`${api_endpoint}/upload`, form, {
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
             headers: { 
               ...form.getHeaders()
             },
