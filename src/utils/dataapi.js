@@ -56,7 +56,8 @@ exports.find = (params, query) =>{
 
                 if (key === 'title' || key === 'name' || key === 'description'){
                     // `like` operation for text fields
-                    data.filter[key] = { $regex: query[key] }
+                    const regexQuery = new RegExp("^" + query[key].toLowerCase(), "i")
+                    data.filter[key] = { $regex: regexQuery }
                 } else {
                     // `eq` operation for rest of fields
                     data.filter[key] = query[key]
