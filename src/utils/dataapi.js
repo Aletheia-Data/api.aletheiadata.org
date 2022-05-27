@@ -56,8 +56,8 @@ exports.find = (params, query) =>{
 
                 if (key === 'title' || key === 'name' || key === 'description'){
                     // `like` operation for text fields
-                    const regexQuery = new RegExp("^" + query[key].toLowerCase(), "i")
-                    data.filter[key] = { $regex: regexQuery }
+                    // as documented: https://www.mongodb.com/docs/manual/reference/operator/query/regex/#mongodb-query-op.-regex
+                    data.filter[key] = { $regex: query[key], $options: 'i'}
                 } else {
                     // `eq` operation for rest of fields
                     data.filter[key] = query[key]
