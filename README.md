@@ -1,3 +1,7 @@
+## Gitpod
+
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/EnzoVezzaro/api.aletheiadata.org)
+
 # API Aletheia Data
 
 Aletheia is an Open Source project that seeks to encourage both public and private entities to facilitate
