@@ -7,6 +7,9 @@ const fileupload = require("express-fileupload");
 
 let cache = apicache.middleware;
 
+var { initialize } = require("express-openapi");
+var swaggerUi = require("swagger-ui-express");
+
 const { version } = require('./package.json');
 
 const dotenv = require('dotenv');
@@ -31,6 +34,28 @@ app.use(cors());
 app.use(fileupload());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+// OpenAPI routes
+initialize({
+    app,
+    apiDoc: require("./api/api-doc"),
+    paths: "./api/paths",
+});
+
+// OpenAPI UI
+app.use(
+    "/api-documentation",
+    swaggerUi.serve,
+    swaggerUi.setup(null, {
+      swaggerOptions: {
+        url: "http://localhost:8000/api-docs",
+      },
+    })
+);
+
+console.log(
+    "OpenAPI documentation available in http://localhost:8000/api-documentation"
+);
 
 app.get('/', (req, res) => {
     res.json('Welcome to Aletheia Data API')
