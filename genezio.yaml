@@ -9,21 +9,14 @@ backend:
           name: express
           path: .
           type: httpServer
-          # Ensure the build tools are installed before starting the backend service
-          environment:
-            - key: INSTALL_BUILD_TOOLS
-              value: "true"
-
-language:
-    name: js
-    runtime: nodejs20.x
+    language:
+        name: js
+        runtime: nodejs20.x
     path: .
-
-scripts:
-    deploy:
-        - if [ "$INSTALL_BUILD_TOOLS" = "true" ]; then sudo yum groupinstall "Development Tools" -y; fi
-        - npm install
-
-    local:
-        - if [ "$INSTALL_BUILD_TOOLS" = "true" ]; then sudo yum groupinstall "Development Tools" -y; fi
-        - npm install
+    scripts:
+        deploy:
+            - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+            - npm install
+        local:
+            - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+            - npm install
