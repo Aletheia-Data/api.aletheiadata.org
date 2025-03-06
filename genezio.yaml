@@ -1,0 +1,8 @@
+name: aletheia-data
+yamlVersion: 2
+backend:
+  path: .
+  language:
+    name: ts
+    # Set the node runtime version to Node 20
+    runtime: nodejs16.x
