@@ -1,3 +1,7 @@
+name: aletheia-data-api
+region: us-east-1
+yamlVersion: 2
+
 backend:
     functions:
         - entry: index.js
@@ -5,22 +9,21 @@ backend:
           name: express
           path: .
           type: httpServer
-    language:
-        name: js
-        runtime: nodejs20.x
+          # Ensure the build tools are installed before starting the backend service
+          environment:
+            - key: INSTALL_BUILD_TOOLS
+              value: "true"
+
+language:
+    name: js
+    runtime: nodejs20.x
     path: .
-    scripts:
-        deploy:
-            - npm install
-        local:
-            - npm install
-name: aletheia-data-api
-region: us-east-1
-yamlVersion: 2
+
 scripts:
     deploy:
-        - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+        - if [ "$INSTALL_BUILD_TOOLS" = "true" ]; then sudo yum groupinstall "Development Tools" -y; fi
         - npm install
+
     local:
-        - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+        - if [ "$INSTALL_BUILD_TOOLS" = "true" ]; then sudo yum groupinstall "Development Tools" -y; fi
         - npm install
