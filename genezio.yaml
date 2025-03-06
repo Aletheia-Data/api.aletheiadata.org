@@ -1,7 +1,3 @@
-name: aletheia-data-api
-region: us-east-1
-yamlVersion: 2
-
 backend:
     functions:
         - entry: index.js
@@ -9,17 +5,22 @@ backend:
           name: express
           path: .
           type: httpServer
-
-language:
-    name: js
-    runtime: nodejs20.x
+    language:
+        name: js
+        runtime: nodejs20.x
     path: .
-
+    scripts:
+        deploy:
+            - npm install
+        local:
+            - npm install
+name: aletheia-data-api
+region: us-east-1
+yamlVersion: 2
 scripts:
     deploy:
         - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
         - npm install
-
     local:
         - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
         - npm install
