@@ -1,8 +1,19 @@
-name: aletheia-data
-yamlVersion: 2
 backend:
-  path: .
-  language:
-    name: ts
-    # Set the node runtime version to Node 20
-    runtime: nodejs16.x
+    functions:
+        - entry: index.js
+          handler: handler
+          name: express
+          path: .
+          type: httpServer
+    language:
+        name: js
+        runtime: nodejs16.x
+    path: .
+    scripts:
+        deploy:
+            - npm install
+        local:
+            - npm install
+name: aletheia-data-api
+region: us-east-1
+yamlVersion: 2
