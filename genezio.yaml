@@ -15,8 +15,8 @@ backend:
     path: .
     scripts:
         deploy:
-            - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+            - yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
             - npm install
         local:
-            - sudo yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
+            - yum groupinstall "Development Tools" # For Amazon Linux (or similar) systems
             - npm install
