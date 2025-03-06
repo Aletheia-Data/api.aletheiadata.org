@@ -7,7 +7,7 @@ backend:
           type: httpServer
     language:
         name: js
-        runtime: nodejs16.x
+        runtime: nodejs20.x
     path: .
     scripts:
         deploy:
