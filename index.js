@@ -81,6 +81,7 @@ app.get(`/v1/services/filecoin/:cid`, services.filecoin);
 /* DEPRECATED */
 console.log('activating Data API');
 app.get(`/v1/api/:entity/getAll`, entities.getAll);
+app.get(`/v2/api/:entity/getAll`, entities.getAllV2);
 
 /******************/
 /******************/

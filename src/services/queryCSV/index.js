@@ -3,7 +3,7 @@ const MiniSearch = require('minisearch');
 
 const utils = require('../../utils');
 
-const jsonSplitter = require('json-splitter');
+const jsonSplitter = require('split-json');
 const dir = require('node-dir');
 
 const fs = require('fs');
