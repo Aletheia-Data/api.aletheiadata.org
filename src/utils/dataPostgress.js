@@ -22,7 +22,7 @@ exports.find = async (params, query) => {
     }
 
     for (const key in query) {
-        if (!['limit', 'id', 'start', 'projection', 'sort', 'count'].includes(key)) {
+        if (!['limit', 'id', 'start', 'projection', 'sort', 'count', 'groupBy'].includes(key)) {
             if (key === 'title' || key === 'name' || key === 'description') {
                 conditions.push(`${key} ILIKE $${values.length + 1}`);
                 values.push(`%${query[key]}%`);
@@ -45,6 +45,14 @@ exports.find = async (params, query) => {
             return `${col} ${order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
         }).join(', ');
         baseQuery += ` ORDER BY ` + sortFields;
+    }
+
+    // Check for 'groupBy' parameter and modify the query to group by the specified fields
+    if (query.groupBy) {
+      const groupByFields = query.groupBy.split(',').map(field => field.trim()); // Split by comma and trim spaces
+      baseQuery = baseQuery.replace('SELECT *', `SELECT ${groupByFields.join(', ')}, COUNT(*) AS group_count`);
+      baseQuery += ` GROUP BY ${groupByFields.join(', ')}`; // Add GROUP BY clause based on the groupBy fields
+      countQuery = countQuery.replace('SELECT COUNT(*)', `SELECT COUNT(DISTINCT ${groupByFields.join(', ')})`); // Adjust count query to count distinct combinations of groupBy fields
     }
 
     // Add pagination parameters to the baseQuery only (not the countQuery)
@@ -78,3 +86,4 @@ exports.find = async (params, query) => {
     }
   });
 };
+
