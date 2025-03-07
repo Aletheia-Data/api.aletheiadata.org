@@ -38,21 +38,26 @@ exports.find = async (params, query) => {
         countQuery += ` WHERE ` + conditions.join(' AND ');
     }
 
-    // Handle sorting if needed
-    if (query.sort) {
-        const sortFields = query.sort.split(',').map(field => {
-            const [col, order] = field.split(':');
-            return `${col} ${order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
-        }).join(', ');
-        baseQuery += ` ORDER BY ` + sortFields;
-    }
-
     // Check for 'groupBy' parameter and modify the query to group by the specified fields
     if (query.groupBy) {
       const groupByFields = query.groupBy.split(',').map(field => field.trim()); // Split by comma and trim spaces
       baseQuery = baseQuery.replace('SELECT *', `SELECT ${groupByFields.join(', ')}, COUNT(*) AS group_count`);
       baseQuery += ` GROUP BY ${groupByFields.join(', ')}`; // Add GROUP BY clause based on the groupBy fields
       countQuery = countQuery.replace('SELECT COUNT(*)', `SELECT COUNT(DISTINCT ${groupByFields.join(', ')})`); // Adjust count query to count distinct combinations of groupBy fields
+    }
+
+    // Handle sorting:
+    if (query.sort) {
+      if (query.groupBy){
+        const sortOrder = query.sort && (query.sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC') || 'DESC';
+        baseQuery += ` ORDER BY group_count ${sortOrder}`;
+      } else {
+        const sortFields = query.sort.split(',').map(field => {
+          const [col, order] = field.split(':');
+          return `${col} ${order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
+        }).join(', ');
+        baseQuery += ` ORDER BY ` + sortFields;
+      }
     }
 
     // Add pagination parameters to the baseQuery only (not the countQuery)
@@ -86,4 +91,3 @@ exports.find = async (params, query) => {
     }
   });
 };
-
