@@ -16,17 +16,16 @@ exports.find = async (params, query) => {
         let values = [];
         let joins = '';
         let selectedFields = [`${params.entity}.*`]; // Default: select all from main entity
-        let tableAliases = {}; // Object to keep track of table aliases for multiple joins
 
         // Handle dynamic JOINs based on 'query.join'
         if (query.join) {
-          const joinParams = query.join.split(',').map(join => join.trim());
-          joinParams.forEach((join, index) => {
-              const [table, onField, foreignField] = join.split(':');
-              if (table && onField && foreignField) {
-                  joins += ` LEFT JOIN ${table} ON ${onField} = ${table}.${foreignField} `;
-              }
-          });
+            const joinParams = query.join.split(',').map(join => join.trim());
+            joinParams.forEach((join) => {
+                const [table, onField, foreignField] = join.split(':');
+                if (table && onField && foreignField) {
+                    joins += ` LEFT JOIN ${table} ON ${onField} = ${table}.${foreignField} `;
+                }
+            });
         }
 
         // Handle Fields Selection with Aliases (table.field.alias)
@@ -54,6 +53,18 @@ exports.find = async (params, query) => {
             });
         }
 
+        // Handle dynamic sum (as COUNT)
+        if (query.sum) {
+            const sumParams = query.sum.split(',').map(sum => sum.trim());
+            sumParams.forEach(sum => {
+                const parts = sum.split('.');
+                if (parts.length === 3) {
+                    const [table, field, alias] = parts;
+                    selectedFields.push(`COUNT(${table}.${field}) AS ${alias}`);
+                }
+            });
+        }
+
         // Correct the table aliases in the query
         baseQuery = `SELECT ${selectedFields.join(', ')} FROM ${params.entity} ${joins}`;
         countQuery = `SELECT COUNT(*) FROM ${params.entity} ${joins}`;
@@ -65,7 +76,7 @@ exports.find = async (params, query) => {
         }
 
         for (const key in query) {
-            if (!['limit', 'id', 'start', 'projection', 'sort', 'count', 'groupBy', 'join', 'aggregate', 'fields'].includes(key)) {
+            if (!['limit', 'id', 'start', 'projection', 'sort', 'count', 'groupBy', 'join', 'aggregate', 'fields', 'sum'].includes(key)) {
                 if (['title', 'name', 'description'].includes(key)) {
                     conditions.push(`${key} ILIKE $${values.length + 1}`);
                     values.push(`%${query[key]}%`);
