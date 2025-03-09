@@ -66,7 +66,11 @@ exports.find = async (params, query) => {
         }
 
         // Correct the table aliases in the query
-        baseQuery = `SELECT ${selectedFields.join(', ')} FROM ${params.entity} ${joins}`;
+        if (query.groupBy){
+          baseQuery = `SELECT ${query.groupBy}, COUNT(*) AS count FROM ${params.entity} ${joins}`;
+        } else {
+          baseQuery = `SELECT ${selectedFields.join(', ')} FROM ${params.entity} ${joins}`;
+        }
         countQuery = `SELECT COUNT(*) FROM ${params.entity} ${joins}`;
 
         // Add conditions
