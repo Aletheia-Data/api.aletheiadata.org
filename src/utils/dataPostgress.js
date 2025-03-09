@@ -102,8 +102,11 @@ exports.find = async (params, query) => {
         // Sorting
         if (query.sort) {
             if (query.groupBy) {
-                const sortOrder = query.sort.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-                baseQuery += ` ORDER BY COUNT(*) ${sortOrder}`;
+                const sortFields = query.sort.split(',').map(field => {
+                    const [col, order] = field.split(':');
+                    return `${col} ${order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
+                }).join(', ');
+                baseQuery += ` ORDER BY ` + sortFields;
             } else {
                 const sortFields = query.sort.split(',').map(field => {
                     const [col, order] = field.split(':');
